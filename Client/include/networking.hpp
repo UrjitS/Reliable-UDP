@@ -16,4 +16,20 @@ struct networking_options {
     in_port_t port_number;
 };
 
-#endif //FSM_NETWORK_SHARE_CLIENT_NETWORKING_HPP
+enum {
+    ACK = 0x01,
+    SYN = 0x02,
+    SYN_ACK = 0x03,
+};
+
+struct header_field {
+    uint32_t sequence_number;
+    uint32_t ack_number;
+    uint8_t flags;
+    uint16_t data_length;
+    std::string data;
+};
+
+bool validate_ip_address(const std::string& ip_address);
+
+#endif

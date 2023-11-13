@@ -5,15 +5,17 @@
 #include <netinet/in.h>
 #include <string>
 
+#define DEFAULT_PORT 5050
 
 struct networking_options {
-    int argc;
-    char ** argv;
+    std::string program_name;
     std::string message;
     int socket_fd;
-    std::string ip_address;
     int ip_family;
-    in_port_t port_number;
+    struct sockaddr_storage * receiver_struct;
+    std::string device_ip_address;
+    std::string receiver_ip_address;
+    in_port_t receiver_port;
 };
 
 enum {
@@ -31,5 +33,7 @@ struct header_field {
 };
 
 bool validate_ip_address(const std::string& ip_address);
+int create_udp_socket(struct networking_options& networkingOptions);
+bool bind_udp_socket(struct networking_options& networkingOptions);
 
 #endif

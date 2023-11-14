@@ -9,6 +9,11 @@
 #include <netdb.h>
 
 std::vector<header_field> * packets = new std::vector<header_field>();
+/**
+ * @brief Gets the devices IP address
+ * @param networkingOptions Networking options struct
+ * @return True if successful, false otherwise
+ */
 bool get_device_ip_address(struct networking_options& networkingOptions);
 
 

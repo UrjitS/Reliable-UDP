@@ -7,6 +7,9 @@
 
 #define DEFAULT_PORT 5050
 
+/**
+ * @brief Networking options struct
+ */
 struct networking_options {
     std::string program_name;
     std::string message;
@@ -18,12 +21,18 @@ struct networking_options {
     in_port_t receiver_port;
 };
 
+/**
+ * @brief Flag Values for header field
+ */
 enum {
     ACK = 0x01,
     SYN = 0x02,
     SYN_ACK = 0x03,
 };
 
+/**
+ * @brief Header field struct
+ */
 struct header_field {
     uint32_t sequence_number;
     uint32_t ack_number;
@@ -32,8 +41,23 @@ struct header_field {
     std::string data;
 };
 
+/**
+ * @brief Validates given IP Address
+ * @param ip_address IP Address to validate
+ * @return True if valid, false otherwise
+ */
 bool validate_ip_address(const std::string& ip_address);
+/**
+ * @brief Validates given Port Number
+ * @param networkingOptions Networking options struct
+ * @return Socket file descriptor otherwise false
+ */
 int create_udp_socket(struct networking_options& networkingOptions);
+/**
+ * @brief Gets the device IP Address
+ * @param networkingOptions Networking options struct
+ * @return True if successful, false otherwise
+ */
 bool bind_udp_socket(struct networking_options& networkingOptions);
 
 #endif

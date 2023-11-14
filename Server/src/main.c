@@ -8,8 +8,10 @@ int (* state[])(void *arg) = {entry_state, parse_args, set_up,
 
 struct transition state_transitions[] = {
         {ENTRY, ok, PARSEARGS},
-        {PARSEARGS, ok, CLEANUP},
+        {PARSEARGS, ok, SETUP},
         {PARSEARGS, error, FATALERROR},
+        {SETUP, ok, CLEANUP},
+        {SETUP, error, FATALERROR},
         {FATALERROR, ok, CLEANUP},
         {CLEANUP, ok, END}
 };

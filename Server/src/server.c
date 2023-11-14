@@ -95,7 +95,35 @@ int parse_in_port_t(struct server_opts *opts)
 int set_up(void *arg)
 {
     struct server_opts *opts = (struct server_opts *) arg;
-    printf("In setup\n");
+    struct sockaddr_in addr;
+    int ret;
+
+    opts->sock_fd = socket(opts->ip_family, SOCK_DGRAM, 0);
+    if(opts->sock_fd == -1)
+    {
+        opts->msg = strdup("socket failed\n");
+        return error;
+    }
+
+    addr.sin_family = opts->ip_family;
+    addr.sin_port = htons(opts->host_port);
+    addr.sin_addr.s_addr = inet_addr(opts->host_ip);
+    if(addr.sin_addr.s_addr ==  (in_addr_t)-1)
+    {
+        opts->msg = strdup("inet_addr failed\n");
+        return error;
+    }
+
+    int option = 1;
+    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+
+    ret = bind(opts->sock_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+    if(ret == -1)
+    {
+        opts->msg = strdup("bind failed\n");
+        return error;
+    }
+
     return ok;
 }
 
@@ -113,6 +141,11 @@ int clean_up(void *arg)
     if(opts->msg)
     {
         free(opts->msg);
+    }
+
+    if(opts->host_ip)
+    {
+        free(opts->host_ip);
     }
 
     return ok;

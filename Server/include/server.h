@@ -5,7 +5,7 @@
 #ifndef RELIABLE_UDP_SERVER_H
 #define RELIABLE_UDP_SERVER_H
 
-#include "fsm.h"
+#include <arpa/inet.h>
 #include <inttypes.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -14,6 +14,8 @@
 #include <sys/errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+
+#include "fsm.h"
 
 #define SERVER_ARGS 3
 #define IP_INDEX 1
@@ -27,6 +29,7 @@ struct server_opts
     in_port_t host_port;
     char *host_ip;
     int ip_family;
+    int sock_fd;
     char *msg;
 };
 

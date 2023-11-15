@@ -9,7 +9,7 @@ std::mutex receive_mutex;
 
 void send_input(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
-        std::lock_guard<std::mutex> lock(send_mutex); // Lock the mutex
+//        std::lock_guard<std::mutex> lock(send_mutex); // Lock the mutex
 
         std::string input;
 
@@ -22,17 +22,17 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
         // Set the data field in the header to the input
         networkingOptions.header->data = input;
 
-        // Call send_packet with the input
-        switch (send_packet(networkingOptions)) {
-            case 1:
-                std::cout << "Window Sized reached." << std::endl;
-                break;
-            case 0:
-                std::cout << "Packet Sent Successfully." << std::endl;
-                break;
-            default:
-                std::cerr << "Failed to Send." << std::endl;
+        // Loop send_packet until it is able to be sent
+        int ret_status;
+        while ((ret_status = send_packet(networkingOptions)) != 0) {
+            if (exit_flag) {
                 return;
+            }
+            if (ret_status == 1) {
+                std::cout << "Window Size Reached." << std::endl;
+            } else {
+                std::cerr << "Failed to Send." << std::endl;
+            }
         }
     }
 }
@@ -41,7 +41,7 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 void read_response(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         {
-            std::lock_guard<std::mutex> lock(receive_mutex); // Lock the mutex
+//            std::lock_guard<std::mutex> lock(receive_mutex); // Lock the mutex
 
             // Call receive_acknowledgements
             receive_acknowledgements(networkingOptions);

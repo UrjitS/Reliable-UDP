@@ -65,6 +65,7 @@ int main(int argc, char * argv[]) {
     header.ack_number = 0;
     header.flags = DATA;
     header.data_length = 0;
+    header.sent_counter = 0;
 
     networkingOptions.header = &header;
     networkingOptions.socket_fd = -1;

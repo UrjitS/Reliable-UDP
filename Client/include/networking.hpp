@@ -40,6 +40,7 @@ struct header_field {
     uint8_t flags;
     uint16_t data_length;
     std::string data;
+    uint64_t sent_counter;
 };
 
 /**

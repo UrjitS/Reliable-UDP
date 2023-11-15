@@ -2,13 +2,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
-#include <vector>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <cstring>
 #include <netdb.h>
 
-std::vector<header_field> * packets = new std::vector<header_field>();
 /**
  * @brief Gets the devices IP address
  * @param networkingOptions Networking options struct
@@ -101,7 +99,4 @@ bool bind_udp_socket(struct networking_options& networkingOptions) {
 
     return true;
 }
-
-
-
 

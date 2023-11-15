@@ -15,7 +15,9 @@ struct networking_options {
     std::string message;
     int socket_fd;
     int ip_family;
-    struct sockaddr_storage * receiver_struct;
+    struct sockaddr_in ipv4_addr;
+    struct sockaddr_in6 ipv6_addr;
+    struct header_field * header;
     std::string device_ip_address;
     std::string receiver_ip_address;
     in_port_t receiver_port;
@@ -26,8 +28,7 @@ struct networking_options {
  */
 enum {
     ACK = 0x01,
-    SYN = 0x02,
-    SYN_ACK = 0x03,
+    DATA = 0x02,
 };
 
 /**

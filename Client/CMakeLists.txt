@@ -17,10 +17,12 @@ set(SOURCE_LIST
 )
 SET(SOURCE_MAIN ${SOURCE_DIR}/main.cpp
                 ${SOURCE_DIR}/networking.cpp
-                ${SOURCE_DIR}/transfer.cpp)
+                ${SOURCE_DIR}/transfer.cpp
+                ${SOURCE_DIR}/reliable-udp.cpp)
 set(HEADER_LIST
         ${INCLUDE_DIR}/networking.hpp
         ${INCLUDE_DIR}/transfer.hpp
+        ${INCLUDE_DIR}/reliable-udp.hpp
 )
 
 include_directories(${INCLUDE_DIR})

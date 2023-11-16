@@ -4,14 +4,16 @@ static int compare_transitions(const void *a, const void *b);
 static enum state_codes lookup_transitions(enum state_codes current_state, enum ret_codes return_code);
 
 int (* state[])(void *arg) = {entry_state, parse_args, set_up,
-                              print_error, clean_up, end_state}; //function pointers go here
+                              do_read, print_error, clean_up, end_state}; //function pointers go here
 
 struct transition state_transitions[] = {
         {ENTRY, ok, PARSEARGS},
         {PARSEARGS, ok, SETUP},
         {PARSEARGS, error, FATALERROR},
-        {SETUP, ok, CLEANUP},
+        {SETUP, ok, READ},
         {SETUP, error, FATALERROR},
+        {READ, ok, READ},
+        {READ, error, FATALERROR},
         {FATALERROR, ok, CLEANUP},
         {CLEANUP, ok, END}
 };
@@ -27,7 +29,7 @@ int main (int argc, char *argv[])
     opts.argc = argc;
     opts.argv = argv;
 
-    while (1) { //TODO: implement exit flag
+    while (1) {
         state_fun = state[cur_state];
         rc = state_fun(&opts);
         if (END == cur_state)

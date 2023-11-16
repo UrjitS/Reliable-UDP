@@ -123,68 +123,6 @@ int set_up(void *arg) {
     return ok;
 }
 
-int do_read(void *arg)
-{
-    printf("Reading...\n");
-
-    struct server_opts *opts = (struct server_opts *) arg;
-    struct sockaddr from_addr;
-    socklen_t from_addr_len = sizeof(struct sockaddr_in);
-    char header[HEADER_LEN];
-    struct stash window[WIN_SIZE];
-    ssize_t rbytes;
-    uint32_t client_seq_num;
-    uint32_t server_seq_num;
-
-    client_seq_num = 0;
-    server_seq_num = 0;
-
-    while(1) //TODO: implement exit flag
-    {
-        rbytes = recvfrom(opts->sock_fd, header, HEADER_LEN, 0, &from_addr, &from_addr_len);
-        if(rbytes == -1)
-        {
-            opts->msg = strdup("recvfrom error\n");
-            break;
-        }
-
-        struct packet pkt;
-        deserialize_header(header, &pkt);
-        pkt.data = malloc(sizeof(pkt.header.data_len+1));
-        rbytes = recvfrom(opts->sock_fd, &pkt.data, pkt.header.data_len, 0,&from_addr, &from_addr_len);
-        if(rbytes == -1)
-        {
-            opts->msg = strdup("recvfrom error\n");
-            break;
-        }
-        pkt.data[pkt.header.data_len] = '\0';
-
-        if(pkt.header.seq_num < client_seq_num)
-        {
-            //RETURN ACK
-            return_ack(opts->sock_fd, &server_seq_num, pkt.header.seq_num, &from_addr, from_addr_len);
-            //IGNORE PACKET
-        }
-        else if(pkt.header.seq_num <= client_seq_num && pkt.header.seq_num < client_seq_num+WIN_SIZE)
-        {
-            //RETURN ACK
-            return_ack(opts->sock_fd, &server_seq_num, pkt.header.seq_num, &from_addr, from_addr_len);
-            //STASH AND DELIVER LOGIC
-            manage_window(&client_seq_num, window, &pkt);
-        }
-
-        memset(&pkt.header, 0, sizeof(struct packet_header));
-        free(pkt.data);
-    }
-
-    if(opts->msg)
-    {
-        return error;
-    }
-
-    return ok;
-}
-
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)
 {
     uint32_t pkt_seq_num;
@@ -247,7 +185,10 @@ void reset_stash(struct stash *stash)
     stash->cleared = 0;
     stash->rel_num = 0;
     stash->seq_num = 0;
-    free(stash->data);
+    if(stash->data)
+    {
+        free(stash->data);
+    }
 }
 
 void deserialize_header(char *header, struct packet *pkt)

@@ -4,9 +4,6 @@ Yes
 
 import argparse
 import ipaddress
-import threading
-from ui import UI
-from networking import forward_data
 
 def check_ip (ip):
     """
@@ -44,13 +41,8 @@ def main ():
     print(f"Receiver Port Number: {args.a}")
     print(f"Port to bind to: {args.p}")
 
-    forward_thread = threading.Thread(target=forward_data, args=(args.r, args.a, args.p))
-    forward_thread.start()
-
-    UI().window.mainloop()
-
-
-
+    
+    
 if __name__ == '__main__':
     main()
     

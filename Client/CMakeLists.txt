@@ -13,15 +13,14 @@ set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCE_LIST
-        ${SOURCE_DIR}/networking.cpp
-        ${SOURCE_DIR}/transfer.cpp
-        ${SOURCE_DIR}/reliable-udp.cpp
+#        ${SOURCE_DIR}/networking.cpp
 )
-SET(SOURCE_MAIN ${SOURCE_DIR}/main.cpp)
+SET(SOURCE_MAIN ${SOURCE_DIR}/main.cpp
+                ${SOURCE_DIR}/networking.cpp
+                ${SOURCE_DIR}/transfer.cpp)
 set(HEADER_LIST
         ${INCLUDE_DIR}/networking.hpp
         ${INCLUDE_DIR}/transfer.hpp
-        ${INCLUDE_DIR}/reliable-udp.hpp
 )
 
 include_directories(${INCLUDE_DIR})

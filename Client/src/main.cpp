@@ -8,11 +8,44 @@
 
 using namespace std;
 
+/**
+ * @brief Parse command line arguments for Receiver IP Address and Port Number
+ *
+ * @param argc Program argument count
+ * @param argv Program argument values
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 static void parse_arguments(int argc, char * argv[], struct networking_options& networkingOptions);
+/**
+ * @brief Print the programs usage, clean resources and exits
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 static void print_program_usage(struct networking_options& networkingOptions);
+/**
+ * @brief Display error message, clean resources and exits
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 static void display_error(struct networking_options& networkingOptions);
+/**
+ * @brief Check if the IP address is IPv4 or IPv6 and Sets up the networking options receiver struct
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 static void check_ip_address(struct networking_options &networkingOptions);
+/**
+ * @brief Clean resources and exit
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 void clean_resources(struct networking_options& networkingOptions);
+/**
+ * @brief Setup the connection
+ * @param networkingOptions Networking options struct
+ * @return bool True if connection was successful, false otherwise
+ */
 bool setup_connection(struct networking_options& networkingOptions);
 
 volatile int exit_flag;
@@ -26,6 +59,15 @@ int main(int argc, char * argv[]) {
     exit_flag = false;
     // Get cmd line arguments
     struct networking_options networkingOptions{};
+    struct header_field header{};
+
+    header.sequence_number = 0;
+    header.ack_number = 0;
+    header.flags = DATA;
+    header.data_length = 0;
+    header.sent_counter = 0;
+
+    networkingOptions.header = &header;
     networkingOptions.socket_fd = -1;
     networkingOptions.program_name = argv[0];
 
@@ -38,12 +80,12 @@ int main(int argc, char * argv[]) {
     signal(SIGINT, sigHandler);
 
     // Create sending and receiver threads
-    std::thread t1(send_input, std::ref(networkingOptions), std::ref(exit_flag));
-    std::thread t2(read_response, std::ref(networkingOptions), std::ref(exit_flag));
+    std::thread send_input_thread(send_input, std::ref(networkingOptions), std::ref(exit_flag));
+    std::thread read_ack_response_thread(read_response, std::ref(networkingOptions), std::ref(exit_flag));
 
     // Wait for both threads to finish
-    t1.join();
-    t2.join();
+    send_input_thread.join();
+    read_ack_response_thread.join();
 
     // Startup sending and receiving threads
     clean_resources(networkingOptions);
@@ -74,7 +116,7 @@ void parse_arguments(int argc, char * argv[], struct networking_options& network
 
     if(argc != 3)
     {
-        networkingOptions.message = "Please give IP address, and port.";
+        networkingOptions.message = "Please give Receiver IP address, and port.";
         print_program_usage(networkingOptions);
     }
 
@@ -103,24 +145,17 @@ void parse_arguments(int argc, char * argv[], struct networking_options& network
 }
 
 static void check_ip_address(struct networking_options& networkingOptions) {
-    networkingOptions.receiver_struct = (struct sockaddr_storage *)malloc(sizeof(struct sockaddr_storage));
-    if(inet_pton(AF_INET, networkingOptions.receiver_ip_address.c_str(), networkingOptions.receiver_struct) == 1)
-    {
+    struct sockaddr_storage receiver_struct{};
+    if (inet_pton(AF_INET, networkingOptions.receiver_ip_address.c_str(), &receiver_struct) == 1) {
         networkingOptions.ip_family = AF_INET;
-        struct sockaddr_in *ipv4_addr;
-
-        ipv4_addr             = (struct sockaddr_in *)networkingOptions.receiver_struct;
-        ipv4_addr->sin_family = AF_INET;
-        ipv4_addr->sin_port   = htons(networkingOptions.receiver_port);
-    }
-    else if(inet_pton(AF_INET6, networkingOptions.receiver_ip_address.c_str(), networkingOptions.receiver_struct) == 1)
-    {
+        networkingOptions.ipv4_addr = *reinterpret_cast<struct sockaddr_in*>(&receiver_struct);
+        networkingOptions.ipv4_addr.sin_family = AF_INET;
+        networkingOptions.ipv4_addr.sin_port = htons(networkingOptions.receiver_port);
+    } else if (inet_pton(AF_INET6, networkingOptions.receiver_ip_address.c_str(), &receiver_struct) == 1) {
         networkingOptions.ip_family = AF_INET6;
-        struct sockaddr_in6 *ipv6_addr;
-
-        ipv6_addr              = (struct sockaddr_in6 *)networkingOptions.receiver_struct;
-        ipv6_addr->sin6_family = AF_INET6;
-        ipv6_addr->sin6_port   = htons(networkingOptions.receiver_port);
+        networkingOptions.ipv6_addr = *reinterpret_cast<struct sockaddr_in6*>(&receiver_struct);
+        networkingOptions.ipv4_addr.sin_family = AF_INET6;
+        networkingOptions.ipv6_addr.sin6_port = htons(networkingOptions.receiver_port);
     }
 }
 
@@ -146,7 +181,7 @@ void clean_resources(struct networking_options& networkingOptions) {
     if (networkingOptions.socket_fd > 0) {
         close(networkingOptions.socket_fd);
     }
-    free(networkingOptions.receiver_struct);
+//    free(networkingOptions.ipv4_addr);
 
     exit(EXIT_SUCCESS);
 }

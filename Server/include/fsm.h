@@ -4,17 +4,13 @@
 int entry_state(void *arg);
 int parse_args(void *arg);
 int set_up(void *arg);
-int wait_client(void *arg);
 int do_read(void *arg);
-int deliver_data(void *arg);
-int stash_data(void *arg);
-int check_stash(void *arg);
 int clean_up(void *arg);
 int print_error(void *arg);
 int end_state(void *arg);
 
 enum state_codes { ENTRY, PARSEARGS, SETUP,
-    FATALERROR, CLEANUP, END}; //must be the same order as states
+        READ, FATALERROR, CLEANUP, END}; //must be the same order as states
 
 enum ret_codes { ok, error, repeat};
 

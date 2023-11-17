@@ -8,5 +8,7 @@
 /Proxy/cmake-build-debug/
 /Proxy/build/
 /Proxy/env
+/Proxy/__pycache__/
 
 /.idea/
+/.vscode/

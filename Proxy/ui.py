@@ -15,6 +15,7 @@ class UI:
         """
         self.window = tk.Tk()
         self.window.title("Proxy Server Settings")
+        self.window.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.sender_drop_chance = tk.StringVar()
         tk.Label(self.window, text="Sender Drop Chance").grid(row=0)
@@ -70,3 +71,11 @@ class UI:
             print(f"DELAY_RANGE set to ({delay_range_low}, {delay_range_high})")
         except ValueError as e:
             tkinter.messagebox.showerror("Input Error", str(e))
+
+    def on_close(self):
+        """
+        Set options.RUNNING to False and close the window.
+        """
+        print("Closing UI")
+        options.RUNNING = False
+        self.window.destroy()

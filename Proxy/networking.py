@@ -2,20 +2,48 @@
 Implements the networking for the proxy
 """
 
-# import socket
+import socket
 import options
 
 
-def create_udp():
+def print_ip():
     """
-    Creates a UDP socket
+    Prints and returns the IP address of the networking interface on this machine.
     """
-    print("Creating UDP socket")
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        ip = s.getsockname()[0]
+    except Exception: # pylint: disable=broad-except
+        ip = '127.0.0.1'
+    finally:
+        s.close()
 
-def forward_data():
+    print(ip)
+    return ip
+
+def create_udp(bind_port: int):
+    """
+    Creates a UDP socket and binds it to this machine's IP address.
+    """
+    # Create a UDP socket
+    ip_address = print_ip()
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # Bind the socket to this machine's IP address and the specified port
+    sock.bind((ip_address, bind_port))
+
+    return sock
+
+def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     """
     Forwards data from the sender to the receiver
     """
     print("Forwarding data")
+
+    socket_fd = create_udp(bind_port)
+
     while options.RUNNING:
         pass

@@ -1,15 +1,12 @@
 #include <iostream>
-#include <mutex>
+#include <chrono>
+#include <thread>
 #include "reliable-udp.hpp"
 #include "networking.hpp"
 #include "transfer.hpp"
 
-std::mutex send_mutex;
-std::mutex receive_mutex;
-
 void send_input(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
-//        std::lock_guard<std::mutex> lock(send_mutex); // Lock the mutex
 
         std::string input;
 
@@ -40,11 +37,11 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 
 void read_response(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
-        {
-//            std::lock_guard<std::mutex> lock(receive_mutex); // Lock the mutex
+        // Call receive_acknowledgements
+//        receive_acknowledgements(networkingOptions);
 
-            // Call receive_acknowledgements
-            receive_acknowledgements(networkingOptions);
-        }
+        // Sleep for a certain duration before rechecking for acknowledgments
+//        std::chrono::milliseconds sleep_duration(500); // Adjust the duration as needed
+//        std::this_thread::sleep_for(sleep_duration);
     }
 }

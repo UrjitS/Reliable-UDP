@@ -82,7 +82,6 @@ int main(int argc, char * argv[]) {
     // Create sending and receiver threads
     std::thread send_input_thread(send_input, std::ref(networkingOptions), std::ref(exit_flag));
     std::thread read_ack_response_thread(read_response, std::ref(networkingOptions), std::ref(exit_flag));
-
     // Wait for both threads to finish
     send_input_thread.join();
     read_ack_response_thread.join();

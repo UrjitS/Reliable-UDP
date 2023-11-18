@@ -145,19 +145,47 @@ void remove_packet_from_sent_packets(struct header_field& header) {
     }
 }
 
-int receive_acknowledgements(struct networking_options& networkingOptions) {
+#include <sys/time.h>
+
+int receive_acknowledgements(struct networking_options& networkingOptions, int timeout_seconds) {
     ssize_t ret_status;
     modifying_global_variables.lock();
 
     // Check if any packets need to be retransmitted
     check_need_for_retransmission(networkingOptions);
 
+    // Set up fd_set for select
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(networkingOptions.socket_fd, &read_fds);
+
+    // Set up timeout using timeval struct
+    struct timeval timeout{};
+    timeout.tv_sec = timeout_seconds;
+    timeout.tv_usec = 0;
+
+    // Use select to wait for data or timeout
+    ret_status = select(networkingOptions.socket_fd + 1, &read_fds, nullptr, nullptr, &timeout);
+
+    if (ret_status == 0) {
+        // Timeout occurred
+        printf("Timeout: No data received within the specified time.\n");
+        modifying_global_variables.unlock();
+        return -1;
+    } else if (ret_status < 0) {
+        // Error in select
+        perror("Select failed");
+        modifying_global_variables.unlock();
+        return -1;
+    }
+
     // Receive the acknowledgement
-    char buffer[MAX_PACKET_SIZE];
+    char buffer[HEADER_LENGTH];
     ret_status = recvfrom(networkingOptions.socket_fd, buffer, sizeof(buffer), 0, nullptr, nullptr);
 
     if (ret_status < 0) {
         perror("Receive Failed");
+        modifying_global_variables.unlock();
         return -1;
     }
 

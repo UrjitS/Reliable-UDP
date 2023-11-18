@@ -38,10 +38,10 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 void read_response(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         // Call receive_acknowledgements
-//        receive_acknowledgements(networkingOptions);
+        receive_acknowledgements(networkingOptions, 5);
 
-        // Sleep for a certain duration before rechecking for acknowledgments
-//        std::chrono::milliseconds sleep_duration(500); // Adjust the duration as needed
-//        std::this_thread::sleep_for(sleep_duration);
+//         Sleep for a certain duration before rechecking for acknowledgments
+        std::chrono::milliseconds sleep_duration(1000); // Adjust the duration as needed
+        std::this_thread::sleep_for(sleep_duration);
     }
 }

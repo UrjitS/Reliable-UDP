@@ -169,7 +169,7 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
 
     if (ret_status == 0) {
         // Timeout occurred
-        printf("Timeout: No data received within the specified time.\n");
+//        printf("Timeout: No data received within the specified time.\n");
         modifying_global_variables.unlock();
         return -1;
     } else if (ret_status < 0) {

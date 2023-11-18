@@ -12,12 +12,18 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 
         // Read a line of input from the terminal
         std::getline(std::cin, input);
-
+        if (input.empty()) {
+            continue;
+        }
         networkingOptions.header->sequence_number++;
         // Set the data length field in the header to the length of the input
         networkingOptions.header->data_length = input.length();
         // Set the data field in the header to the input
         networkingOptions.header->data = input;
+
+        if (exit_flag) {
+            return;
+        }
 
         // Loop send_packet until it is able to be sent
         int ret_status;

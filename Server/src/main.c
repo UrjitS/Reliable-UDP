@@ -82,7 +82,7 @@ int do_read(void *arg)
     struct server_opts *opts = (struct server_opts *) arg;
     struct sockaddr from_addr;
     socklen_t from_addr_len = sizeof(struct sockaddr_in);
-    char header[1025];
+    char header[HEADER_LEN];
     struct stash window[WIN_SIZE];
     ssize_t rbytes;
     uint32_t client_seq_num;
@@ -93,7 +93,7 @@ int do_read(void *arg)
 
     while(1)
     {
-        rbytes = recvfrom(opts->sock_fd, header, 11, 0, &from_addr, &from_addr_len);
+        rbytes = recvfrom(opts->sock_fd, header, HEADER_LEN, 0, &from_addr, &from_addr_len);
         if(rbytes == -1)
         {
             if(exit_flag)

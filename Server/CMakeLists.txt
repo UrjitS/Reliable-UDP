@@ -36,13 +36,6 @@ set_target_properties(reliable_udp PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_library(LIBDC_ERROR dc_error REQUIRED)
-find_library(LIBDC_ENV dc_env REQUIRED)
-find_library(LIBDC_FSM dc_fsm REQUIRED)
-
-target_link_libraries(reliable_udp PUBLIC ${LIBDC_ERROR})
-target_link_libraries(reliable_udp PUBLIC ${LIBDC_ENV})
-target_link_libraries(reliable_udp PUBLIC ${LIBDC_FSM})
 
 # Add compiler flags
 target_compile_options(reliable_udp PRIVATE

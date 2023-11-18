@@ -39,13 +39,6 @@ set_target_properties(client PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_library(LIBDC_ERROR p101_error REQUIRED)
-find_library(LIBDC_ENV p101_env REQUIRED)
-find_library(LIBDC_FSM p101_fsm REQUIRED)
-
-target_link_libraries(client PUBLIC ${LIBDC_ERROR})
-target_link_libraries(client PUBLIC ${LIBDC_ENV})
-target_link_libraries(client PUBLIC ${LIBDC_FSM})
 # Add compiler flags
 target_compile_options(client PRIVATE
         -Wall              # Enable all compiler warnings

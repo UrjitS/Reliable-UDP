@@ -6,6 +6,7 @@
 #include <cstring>
 #include <mutex>
 #include <iostream>
+#include <sys/time.h>
 
 std::mutex modifying_global_variables;
 std::vector<header_field> sent_packets = std::vector<header_field>();
@@ -145,10 +146,14 @@ void remove_packet_from_sent_packets(struct header_field& header) {
     }
 }
 
-#include <sys/time.h>
 
 int receive_acknowledgements(struct networking_options& networkingOptions, int timeout_seconds) {
     ssize_t ret_status;
+
+    if (window_size >= MAX_WINDOW) {
+        increment_sent_counter();
+    }
+
     modifying_global_variables.lock();
 
     // Check if any packets need to be retransmitted
@@ -191,7 +196,7 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
 
     // Decode the acknowledgement
     struct header_field decoded_header = decode_string(std::string(buffer));
-
+    std::cout << "Ack: " << decoded_header.sequence_number << " " << decoded_header.ack_number << " " << static_cast<int>(decoded_header.flags) << " " << decoded_header.data_length << " " << decoded_header.data << std::endl;
     // Remove the packet from the list of sent packets
     remove_packet_from_sent_packets(decoded_header);
 

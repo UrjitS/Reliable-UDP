@@ -2,6 +2,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <bits/getopt_core.h>
+#include <pthread.h>
 #include <unistd.h>
 #include "transfer.hpp"
 #include <csignal>

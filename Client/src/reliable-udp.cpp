@@ -12,42 +12,30 @@ std::mutex modifying_global_variables;
 std::vector<header_field> sent_packets = std::vector<header_field>();
 int window_size = 0;
 
-char* pack_header(struct header_field* header);
+std::string pack_header(struct header_field* header);
 void increment_sent_counter();
-ssize_t send_packet_over(struct networking_options& networkingOptions, char * packet);
+ssize_t send_packet_over(struct networking_options& networkingOptions, const std::string& packet);
 void check_need_for_retransmission(struct networking_options& networkingOptions);
 struct header_field decode_string(const std::string& packet_raw);
 
-char* pack_header(struct header_field* header) {
+std::string pack_header(struct header_field * header) {
     header->data_length = header->data.length() + 3;
-    std::cout << "Header: " << header->sequence_number << " " << header->ack_number << " " << static_cast<int>(header->flags) << " " << header->data_length << " " << header->data << std::endl;
-
-    uint32_t seq_number = htonl(header->sequence_number);
-    uint32_t ack_number = htonl(header->ack_number);
-    uint8_t flags = htons(header->flags); // assuming flags is a uint8_t
+    uint32_t seq_number  = htonl(header->sequence_number);
+    uint32_t ack_number  = htonl(header->ack_number);
+    uint8_t flags        = htons(header->flags);
     uint16_t data_length = htons(header->data_length);
 
-    // Calculate the total size needed for the buffer
-    size_t total_size = sizeof(seq_number) + sizeof(ack_number) + sizeof(flags) + sizeof(data_length) + header->data.length() + 1 + 2;
-
-    // Allocate memory for the buffer
-    char* packet = new char[total_size];
-
-    // Copy data into the buffer
-    std::memcpy(packet, &seq_number, sizeof(seq_number));
-    std::memcpy(packet + sizeof(seq_number), &ack_number, sizeof(ack_number));
-    std::memcpy(packet + sizeof(seq_number) + sizeof(ack_number), &flags, sizeof(flags));
-    std::memcpy(packet + sizeof(seq_number) + sizeof(ack_number) + sizeof(flags), &data_length, sizeof(data_length));
-    std::memcpy(packet + sizeof(seq_number) + sizeof(ack_number) + sizeof(flags) + sizeof(data_length), header->data.c_str(), header->data.length());
-    packet[total_size - 3] = '\0'; // null terminator
-    packet[total_size - 2] = '\x03'; // ETX character
-    packet[total_size - 1] = '\x03'; // ETX character
-
-    std::cout << "Packet: " << packet << std::endl;
+    std::string packet;
+    packet.append(reinterpret_cast<const char *>(&seq_number), sizeof(seq_number));
+    packet.append(reinterpret_cast<const char *>(&ack_number), sizeof(ack_number));
+    packet.append(reinterpret_cast<const char *>(&flags), sizeof(flags));
+    packet.append(reinterpret_cast<const char *>(&data_length), sizeof(data_length));
+    packet.append(header->data);
+    packet.append("\0", 1);  // Append a null character with length 1
+    packet.append("\x03\x03", 2);  // Append two ETX characters
 
     return packet;
 }
-
 
 void increment_sent_counter() {
     for (auto & sent_packet : sent_packets) {
@@ -55,13 +43,13 @@ void increment_sent_counter() {
     }
 }
 
-ssize_t send_packet_over(struct networking_options& networkingOptions, char * packet) {
+ssize_t send_packet_over(struct networking_options& networkingOptions, const std::string& packet) {
     ssize_t ret_status;
 
     if (networkingOptions.ip_family == AF_INET) {
-        ret_status = sendto(networkingOptions.socket_fd, packet, sizeof(packet), 0, (struct sockaddr *) &networkingOptions.ipv4_addr, sizeof(networkingOptions.ipv4_addr));
+        ret_status = sendto(networkingOptions.socket_fd, packet.c_str(), packet.length(), 0, (struct sockaddr *) &networkingOptions.ipv4_addr, sizeof(networkingOptions.ipv4_addr));
     } else {
-        ret_status = sendto(networkingOptions.socket_fd, packet, sizeof(packet), 0, (struct sockaddr *) &networkingOptions.ipv6_addr, sizeof(networkingOptions.ipv6_addr));
+        ret_status = sendto(networkingOptions.socket_fd, packet.c_str(), packet.length(), 0, (struct sockaddr *) &networkingOptions.ipv6_addr, sizeof(networkingOptions.ipv6_addr));
     }
 
     return ret_status;
@@ -75,7 +63,7 @@ int send_packet(struct networking_options& networkingOptions) {
         return 1;
     }
 
-    char * packet = pack_header(networkingOptions.header);
+    std::string packet = pack_header(networkingOptions.header);
 
     modifying_global_variables.lock();
 
@@ -125,7 +113,7 @@ void check_need_for_retransmission(struct networking_options& networkingOptions)
     for (auto & sent_packet : sent_packets) {
         if (sent_packet.sent_counter >= 5) {
             // Retransmit packet
-            char * packet = pack_header(&sent_packet);
+            std::string packet = pack_header(&sent_packet);
             ssize_t ret_status = send_packet_over(networkingOptions, packet);
             if (ret_status < 0) {
                 perror("Retransmission Failed To Send");

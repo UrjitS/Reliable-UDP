@@ -104,12 +104,13 @@ int do_read(void *arg)
     }
 
     rbytes = 0;
-    while(rbytes != HEADER_LEN)
-    {
-        printf("Reading...\n");
-        rbytes += recvfrom(opts->sock_fd, &header[rbytes], HEADER_LEN-rbytes, 0, &from_addr, &from_addr_len);
-        if(rbytes < 0) rbytes = 0;
-        printf("rbytes: %zd\n", rbytes);
+    while (rbytes < HEADER_LEN) {
+        printf("Reading header...\n");
+        ssize_t recv_result = recvfrom(opts->sock_fd, &header[rbytes], HEADER_LEN - rbytes, 0, &from_addr, &from_addr_len);
+        if (recv_result >= 0) {
+            rbytes += recv_result;
+        }
+        printf("rbytes: %zdd", rbytes);
     }
     printf("first rbytes: %zd\n", rbytes);
 
@@ -119,12 +120,13 @@ int do_read(void *arg)
     pkt->data = malloc(pkt->header->data_len);
     print_packet_header(pkt);
     rbytes = 0;
-    while(rbytes != pkt->header->data_len)
-    {
+    while (rbytes < pkt->header->data_len) {
         printf("Reading data...\n");
-        rbytes += recvfrom(opts->sock_fd, &pkt->data[rbytes], pkt->header->data_len-rbytes, 0,&from_addr, &from_addr_len);
-        if(rbytes < 0) rbytes = 0;
-        printf("rbytes: %zd\n", rbytes);
+        ssize_t recv_result = recvfrom(opts->sock_fd, &pkt->data[rbytes], pkt->header->data_len - rbytes, 0, &from_addr, &from_addr_len);
+        if (recv_result >= 0) {
+            rbytes += recv_result;
+        }
+        printf("rbytes: %zdd", rbytes);
     }
     printf("second rbytes: %zd\n", rbytes);
     printf("pkt->data: %s\n", pkt->data);
@@ -169,8 +171,8 @@ int do_read(void *arg)
 void print_packet_header(struct packet *pkt)
 {
     printf("----------Packet Info----------\n");
-    printf("Seq Num: %d", pkt->header->seq_num);
-    printf("Ack Num: %d", pkt->header->ack_num);
-    printf("Flags: %d", pkt->header->flags);
-    printf("Data Len: %d", pkt->header->data_len);
+    printf("Seq Num: %d\n", pkt->header->seq_num);
+    printf("Ack Num: %d\n", pkt->header->ack_num);
+    printf("Flags: %d\n", pkt->header->flags);
+    printf("Data Len: %d\n", pkt->header->data_len);
 }

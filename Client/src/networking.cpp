@@ -56,7 +56,7 @@ bool get_device_ip_address(struct networking_options& networkingOptions) {
             continue;
         }
 
-        if(ifaddr->ifa_addr->sa_family == AF_INET && strcmp(ifaddr->ifa_name, "lo") != 0)
+        if(ifaddr->ifa_addr->sa_family == AF_INET && (strcmp(ifaddr->ifa_name, "lo") != 0) && (strcmp(ifaddr->ifa_name, "lo0") != 0))
         {
             struct sockaddr_in ipv4{};
 

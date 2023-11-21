@@ -1,8 +1,7 @@
 #include "networking.hpp"
 #include <iostream>
 #include <arpa/inet.h>
-#include <bits/getopt_core.h>
-#include <pthread.h>
+#include <getopt.h>
 #include <unistd.h>
 #include "transfer.hpp"
 #include <csignal>

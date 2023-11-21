@@ -127,36 +127,43 @@ int do_read(void *arg)
 //        }
 //    }
 
-    memset(buffer, 0, MAX_LEN);
-    ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-    printf("ret: %d", ret);
-    struct packet *pkt = malloc(sizeof(struct packet));
-    pkt->header = malloc(sizeof(struct packet_header));
-    deserialize_packet(buffer, pkt);
-    print_packet(pkt);
+//    memset(buffer, 0, MAX_LEN);
+//    ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
+//    printf("ret: %d", ret);
+//    struct packet *pkt = malloc(sizeof(struct packet));
+//    pkt->header = malloc(sizeof(struct packet_header));
+//    deserialize_packet(buffer, pkt);
+//    print_packet(pkt);
 
-    if(pkt->header->seq_num < client_seq_num)
-    {
-        printf("Unexpected data arrived...\n");
-        //RETURN ACK
-        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
-        //IGNORE PACKET
-    }
-    else if(pkt->header->seq_num <= client_seq_num && pkt->header->seq_num < client_seq_num+WIN_SIZE)
-    {
-        printf("Expected data arrived...\n");
-        //RETURN ACK
-        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
-        //STASH AND DELIVER LOGIC
-        manage_window(&client_seq_num, window, pkt);
-    }
-    else
-    {
-        printf("Ignore...\n");
-    }
-    free(pkt->header);
-    free(pkt->data);
-    free(pkt);
+    struct sockaddr_in clientAddr;
+    socklen_t addrLen = sizeof(clientAddr);
+    char buffertemp[1024];
+
+    ssize_t bytesRead = recvfrom(opts->sock_fd, buffertemp, sizeof(buffertemp), 0, (struct sockaddr*)&clientAddr, &addrLen);
+    printf("bytesRead: %zd\n", bytesRead);
+
+//    if(pkt->header->seq_num < client_seq_num)
+//    {
+//        printf("Unexpected data arrived...\n");
+//        //RETURN ACK
+//        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
+//        //IGNORE PACKET
+//    }
+//    else if(pkt->header->seq_num <= client_seq_num && pkt->header->seq_num < client_seq_num+WIN_SIZE)
+//    {
+//        printf("Expected data arrived...\n");
+//        //RETURN ACK
+//        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
+//        //STASH AND DELIVER LOGIC
+//        manage_window(&client_seq_num, window, pkt);
+//    }
+//    else
+//    {
+//        printf("Ignore...\n");
+//    }
+//    free(pkt->header);
+//    free(pkt->data);
+//    free(pkt);
 
     for(size_t i = 0; i < WIN_SIZE; i++)
     {
@@ -187,7 +194,9 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
         {
             return -1;
         }
-        printf("count: %zd\n", count);
+        char *str = strdup("count++\n");
+        write(STDOUT_FILENO, str, strlen(str));
+        free(str);
     }
 
     return 0;

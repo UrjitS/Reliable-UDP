@@ -1,7 +1,6 @@
 //
 // Created by Colin Lam on 2023-11-13.
 //
-
 #include "server.h"
 
 int entry_state(void *arg)
@@ -111,8 +110,8 @@ int set_up(void *arg) {
         return error;
     }
 
-    int option = 1;
-    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+//    int option = 1;
+//    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
     ret = bind(opts->sock_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
     if (ret == -1) {
@@ -120,6 +119,7 @@ int set_up(void *arg) {
         return error;
     }
 
+    printf("Finished Set up\n");
     return ok;
 }
 
@@ -128,10 +128,10 @@ void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet
     uint32_t pkt_seq_num;
 
     //store_packet
-    pkt_seq_num = pkt->header.seq_num - *client_seq_num;
+    pkt_seq_num = pkt->header->seq_num - *client_seq_num;
     window[pkt_seq_num].cleared = 1;
     window[pkt_seq_num].rel_num = pkt_seq_num;
-    window[pkt_seq_num].seq_num = pkt->header.seq_num;
+    window[pkt_seq_num].seq_num = pkt->header->seq_num;
     window[pkt_seq_num].data = strdup(pkt->data); //malloc
 
     //check_window
@@ -169,15 +169,16 @@ void order_window(const uint32_t *client_seq_num, struct stash *window)
 
 void deliver_data(char *data)
 {
-    size_t len;
-
-    len = strlen(data);
-    len -= ACK_DATA_LEN;
-
-    for(size_t i = 0; i < len; i++)
-    {
-        printf("%c", data[i]);
-    }
+//    size_t len;
+//
+//    len = strlen(data);
+//    len -= ACK_DATA_LEN;
+//
+//    for(size_t i = 0; i < len; i++)
+//    {
+//        printf("%c", data[i]);
+//    }
+    printf("Client: %s", data);
 }
 
 void reset_stash(struct stash *stash)
@@ -191,23 +192,25 @@ void reset_stash(struct stash *stash)
     }
 }
 
-void deserialize_header(char *header, struct packet *pkt)
+void deserialize_packet(char *header, struct packet *pkt)
 {
     size_t count;
-    memset(&pkt->header, 0, sizeof(struct packet_header));
-
     count = 0;
-    memcpy(&pkt->header.seq_num, &header[count], sizeof(pkt->header.seq_num));
-    count += sizeof(pkt->header.seq_num);
-    memcpy(&pkt->header.ack_num, &header[count], sizeof(pkt->header.ack_num));
-    count += sizeof(pkt->header.ack_num);
-    memcpy(&pkt->header.flags, &header[count], sizeof(pkt->header.flags));
-    count += sizeof(pkt->header.flags);
-    memcpy(&pkt->header.data_len, &header[count], sizeof(pkt->header.data_len));
+    memcpy(&pkt->header->seq_num, &header[count], sizeof(pkt->header->seq_num));
+    count += sizeof(pkt->header->seq_num);
+    memcpy(&pkt->header->ack_num, &header[count], sizeof(pkt->header->ack_num));
+    count += sizeof(pkt->header->ack_num);
+    memcpy(&pkt->header->flags, &header[count], sizeof(pkt->header->flags));
+    count += sizeof(pkt->header->flags);
+    memcpy(&pkt->header->data_len, &header[count], sizeof(pkt->header->data_len));
+    count += sizeof(pkt->header->data_len);
 
-    pkt->header.seq_num = ntohl(pkt->header.seq_num);
-    pkt->header.ack_num = ntohl(pkt->header.ack_num);
-    pkt->header.data_len = ntohl(pkt->header.data_len);
+    pkt->header->seq_num = ntohl(pkt->header->seq_num);
+    pkt->header->ack_num = ntohl(pkt->header->ack_num);
+    pkt->header->data_len = ntohs(pkt->header->data_len);
+
+    pkt->data = malloc(pkt->header->data_len);
+    memcpy(&pkt->data, &header[count], pkt->header->data_len);
 }
 
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
@@ -265,6 +268,7 @@ int clean_up(void *arg)
 
     close(opts->sock_fd);
 
+    printf("Finished clean up\n");
     return ok;
 }
 

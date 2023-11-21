@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <sys/fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
@@ -20,7 +21,7 @@
 #define SERVER_ARGS 3
 #define IP_INDEX 1
 #define PORT_INDEX 2
-#define HEADER_LEN 11
+#define MAX_LEN 1024
 #define WIN_SIZE 5
 #define ACK_SIZE 13
 #define ACK_DATA_LEN 2
@@ -48,7 +49,7 @@ struct packet_header {
 };
 
 struct packet {
-    struct packet_header header;
+    struct packet_header *header;
     char *data;
 };
 
@@ -61,7 +62,8 @@ struct stash {
 
 int get_ip_family(const char *ip_addr);
 int parse_in_port_t(struct server_opts *opts);
-void deserialize_header(char *header, struct packet *pkt);
+int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len);
+void deserialize_packet(char *header, struct packet *pkt);
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
                 struct sockaddr *from_addr, socklen_t from_addr_len);
 void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len);
@@ -70,6 +72,6 @@ void deliver_data(char *data);
 void reset_stash(struct stash *stash);
 void order_window(const uint32_t *client_seq_num, struct stash *window);
 void check_window(uint32_t *client_seq_num, struct stash *window);
-uint32_t compare_rel_num(const void *a, const void *b);
+void print_packet(struct packet *pkt);
 
 #endif

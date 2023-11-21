@@ -126,7 +126,7 @@ int do_read(void *arg)
         if (recv_result >= 0) {
             rbytes += recv_result;
         }
-        printf("rbytes: %zdd", rbytes);
+        printf("rbytes: %zdd\n", rbytes);
     }
     printf("second rbytes: %zd\n", rbytes);
     printf("pkt->data: %s\n", pkt->data);

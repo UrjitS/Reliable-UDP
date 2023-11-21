@@ -108,6 +108,7 @@ int do_read(void *arg)
     {
         printf("Reading...\n");
         rbytes += recvfrom(opts->sock_fd, &header[rbytes], HEADER_LEN-rbytes, 0, &from_addr, &from_addr_len);
+        if(rbytes < 0) rbytes = 0;
         printf("rbytes: %zd\n", rbytes);
     }
     printf("first rbytes: %zd\n", rbytes);
@@ -122,6 +123,7 @@ int do_read(void *arg)
     {
         printf("Reading data...\n");
         rbytes += recvfrom(opts->sock_fd, &pkt->data[rbytes], pkt->header->data_len-rbytes, 0,&from_addr, &from_addr_len);
+        if(rbytes < 0) rbytes = 0;
         printf("rbytes: %zd\n", rbytes);
     }
     printf("second rbytes: %zd\n", rbytes);

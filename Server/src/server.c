@@ -1,7 +1,6 @@
 //
 // Created by Colin Lam on 2023-11-13.
 //
-
 #include "server.h"
 
 int entry_state(void *arg)
@@ -124,6 +123,23 @@ int set_up(void *arg) {
     return ok;
 }
 
+//sets socket to non-blocking mode
+//returns 0 on success, -1 on failure
+int set_non_blocking(int sock_fd) {
+    int flags = fcntl(sock_fd, F_GETFL, 0);
+    if (flags == -1) {
+        return -1;
+    }
+
+    flags |= O_NONBLOCK;
+
+    if (fcntl(sock_fd, F_SETFL, flags) == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)
 {
     uint32_t pkt_seq_num;
@@ -193,10 +209,9 @@ void reset_stash(struct stash *stash)
     }
 }
 
-void deserialize_header(char *header, struct packet *pkt)
+void deserialize_packet(char *header, struct packet *pkt)
 {
     size_t count;
-
     count = 0;
     memcpy(&pkt->header->seq_num, &header[count], sizeof(pkt->header->seq_num));
     count += sizeof(pkt->header->seq_num);
@@ -205,10 +220,14 @@ void deserialize_header(char *header, struct packet *pkt)
     memcpy(&pkt->header->flags, &header[count], sizeof(pkt->header->flags));
     count += sizeof(pkt->header->flags);
     memcpy(&pkt->header->data_len, &header[count], sizeof(pkt->header->data_len));
+    count += sizeof(pkt->header->data_len);
 
     pkt->header->seq_num = ntohl(pkt->header->seq_num);
     pkt->header->ack_num = ntohl(pkt->header->ack_num);
     pkt->header->data_len = ntohs(pkt->header->data_len);
+
+    pkt->data = malloc(pkt->header->data_len);
+    memcpy(&pkt->data, &header[count], pkt->header->data_len);
 }
 
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,

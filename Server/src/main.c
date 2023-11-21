@@ -84,52 +84,40 @@ int do_read(void *arg)
     struct server_opts *opts = (struct server_opts *) arg;
     struct sockaddr from_addr;
     socklen_t from_addr_len = sizeof(struct sockaddr_in);
-    char header[HEADER_LEN];
+    char buffer[MAX_LEN];
     struct stash window[WIN_SIZE];
-    ssize_t rbytes;
+    int ret;
     uint32_t client_seq_num;
     uint32_t server_seq_num;
 
     client_seq_num = 0;
     server_seq_num = 0;
 
-    struct timeval timeout;
-    timeout.tv_sec = 2;
-    timeout.tv_usec = 0;
+//    struct timeval timeout;
+//    timeout.tv_sec = 2;
+//    timeout.tv_usec = 0;
+//
+//    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+//        perror("Error setting socket timeout");
+//        close(opts->sock_fd);
+//        exit(EXIT_FAILURE);
+//    }
 
-    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
-        perror("Error setting socket timeout");
-        close(opts->sock_fd);
-        exit(EXIT_FAILURE);
+    ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
+    if (ret == -1)
+    {
+        opts->msg = strdup("fill_buffer error\n");
+        return error;
     }
-
-    rbytes = 0;
-    while (rbytes < HEADER_LEN) {
-        printf("Reading header...\n");
-        ssize_t recv_result = recvfrom(opts->sock_fd, &header[rbytes], HEADER_LEN - rbytes, 0, &from_addr, &from_addr_len);
-        if (recv_result >= 0) {
-            rbytes += recv_result;
-        }
-        printf("rbytes: %zdd", rbytes);
+    if(exit_flag == true)
+    {
+        return done;
     }
-    printf("first rbytes: %zd\n", rbytes);
 
     struct packet *pkt = malloc(sizeof(struct packet));
     pkt->header = malloc(sizeof(struct packet_header));
-    deserialize_header(header, pkt);
-    pkt->data = malloc(pkt->header->data_len);
-    print_packet_header(pkt);
-    rbytes = 0;
-    while (rbytes < pkt->header->data_len) {
-        printf("Reading data...\n");
-        ssize_t recv_result = recvfrom(opts->sock_fd, &pkt->data[rbytes], pkt->header->data_len - rbytes, 0, &from_addr, &from_addr_len);
-        if (recv_result >= 0) {
-            rbytes += recv_result;
-        }
-        printf("rbytes: %zdd\n", rbytes);
-    }
-    printf("second rbytes: %zd\n", rbytes);
-    printf("pkt->data: %s\n", pkt->data);
+    deserialize_packet(buffer, pkt);
+    print_packet(pkt);
 
     if(pkt->header->seq_num < client_seq_num)
     {
@@ -167,11 +155,40 @@ int do_read(void *arg)
     return ok;
 }
 
-void print_packet_header(struct packet *pkt)
+int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len)
+{
+    size_t count;
+    int ret;
+
+    ret = set_non_blocking(sock_fd);
+    if(ret == -1)
+    {
+        return ret;
+    }
+    count = 0;
+    while(buffer[count] != ETX && buffer[count+1] != ETX && exit_flag == false)
+    {
+        ssize_t rbytes = recvfrom(sock_fd, &buffer[count], 1, 0, from_addr, from_addr_len);
+        if(rbytes >= 0)
+        {
+            count += rbytes;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+void print_packet(struct packet *pkt)
 {
     printf("----------Packet Info----------\n");
     printf("Seq Num: %d\n", pkt->header->seq_num);
     printf("Ack Num: %d\n", pkt->header->ack_num);
     printf("Flags: %d\n", pkt->header->flags);
     printf("Data Len: %d\n", pkt->header->data_len);
+    printf("Data: %s\n", pkt->data);
+
 }

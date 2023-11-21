@@ -170,15 +170,16 @@ void order_window(const uint32_t *client_seq_num, struct stash *window)
 
 void deliver_data(char *data)
 {
-    size_t len;
-
-    len = strlen(data);
-    len -= ACK_DATA_LEN;
-
-    for(size_t i = 0; i < len; i++)
-    {
-        printf("%c", data[i]);
-    }
+//    size_t len;
+//
+//    len = strlen(data);
+//    len -= ACK_DATA_LEN;
+//
+//    for(size_t i = 0; i < len; i++)
+//    {
+//        printf("%c", data[i]);
+//    }
+    printf("Client: %s", data);
 }
 
 void reset_stash(struct stash *stash)

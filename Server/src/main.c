@@ -154,7 +154,6 @@ int do_read(void *arg)
     free(pkt->data);
     free(pkt);
 
-
     for(size_t i = 0; i < WIN_SIZE; i++)
     {
         reset_stash(&window[i]);

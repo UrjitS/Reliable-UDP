@@ -93,27 +93,43 @@ int do_read(void *arg)
     client_seq_num = 0;
     server_seq_num = 0;
 
+//    fd_set readfds;
 //    struct timeval timeout;
-//    timeout.tv_sec = 2;
+//    FD_ZERO(&readfds);
+//    FD_SET((unsigned int)opts->sock_fd, &readfds);
+//    timeout.tv_sec = 1;
 //    timeout.tv_usec = 0;
-//
-//    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
-//        perror("Error setting socket timeout");
-//        close(opts->sock_fd);
-//        exit(EXIT_FAILURE);
+//    ret = 0;
+//    while (ret == 0)
+//    {
+//        ret = select(opts->sock_fd + 1, &readfds, NULL, NULL, &timeout);
+//        if (ret == -1)
+//        {
+//            opts->msg = strdup("select error\n");
+//            return error;
+//        }
+//        if(exit_flag == true)
+//        {
+//            return done;
+//        }
+//    }
+//    if(FD_ISSET((unsigned int)opts->sock_fd, &readfds))
+//    {
+//        ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
+//        if (ret == -1)
+//        {
+//            opts->msg = strdup("fill_buffer error\n");
+//            return error;
+//        }
+//        if(exit_flag == true)
+//        {
+//            return done;
+//        }
 //    }
 
+    memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-    if (ret == -1)
-    {
-        opts->msg = strdup("fill_buffer error\n");
-        return error;
-    }
-    if(exit_flag == true)
-    {
-        return done;
-    }
-
+    printf("ret: %d", ret);
     struct packet *pkt = malloc(sizeof(struct packet));
     pkt->header = malloc(sizeof(struct packet_header));
     deserialize_packet(buffer, pkt);
@@ -158,13 +174,7 @@ int do_read(void *arg)
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len)
 {
     size_t count;
-    int ret;
 
-    ret = set_non_blocking(sock_fd);
-    if(ret == -1)
-    {
-        return ret;
-    }
     count = 0;
     while(buffer[count] != ETX && buffer[count+1] != ETX && exit_flag == false)
     {

@@ -62,7 +62,6 @@ struct stash {
 
 int get_ip_family(const char *ip_addr);
 int parse_in_port_t(struct server_opts *opts);
-int set_non_blocking(int sock_fd);
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len);
 void deserialize_packet(char *header, struct packet *pkt);
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,

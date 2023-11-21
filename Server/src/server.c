@@ -110,8 +110,8 @@ int set_up(void *arg) {
         return error;
     }
 
-    int option = 1;
-    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+//    int option = 1;
+//    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
     ret = bind(opts->sock_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
     if (ret == -1) {
@@ -121,23 +121,6 @@ int set_up(void *arg) {
 
     printf("Finished Set up\n");
     return ok;
-}
-
-//sets socket to non-blocking mode
-//returns 0 on success, -1 on failure
-int set_non_blocking(int sock_fd) {
-    int flags = fcntl(sock_fd, F_GETFL, 0);
-    if (flags == -1) {
-        return -1;
-    }
-
-    flags |= O_NONBLOCK;
-
-    if (fcntl(sock_fd, F_SETFL, flags) == -1) {
-        return -1;
-    }
-
-    return 0;
 }
 
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)

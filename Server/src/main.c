@@ -187,6 +187,7 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
         {
             return -1;
         }
+        printf("count: %zd\n", count);
     }
 
     return 0;

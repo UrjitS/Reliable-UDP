@@ -31,7 +31,7 @@ std::string pack_header(struct header_field * header) {
     packet.append(reinterpret_cast<const char *>(&flags), sizeof(flags));
     packet.append(reinterpret_cast<const char *>(&data_length), sizeof(data_length));
     packet.append(header->data);
-    packet.append("\0", 1);  // Append a null character with length 1
+    packet.append("\0", 1);        // Append a null character with length 1
     packet.append("\x03\x03", 2);  // Append two ETX characters
 
     return packet;
@@ -164,6 +164,7 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
         // Timeout occurred
 //        printf("Timeout: No data received within the specified time.\n");
         modifying_global_variables.unlock();
+        increment_sent_counter();
         return -1;
     } else if (ret_status < 0) {
         // Error in select

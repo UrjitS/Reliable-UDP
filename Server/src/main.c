@@ -5,6 +5,7 @@ int volatile exit_flag = false;
 
 void sigHandler(int signal) {
     exit_flag = true;
+    printf("exit_flag set to %d\n", exit_flag);
 }
 
 static int compare_transitions(const void *a, const void *b);
@@ -21,6 +22,7 @@ struct transition state_transitions[] = {
         {SETUP, error, FATALERROR},
         {READ, ok, READ},
         {READ, error, FATALERROR},
+        {READ, done, CLEANUP},
         {FATALERROR, ok, CLEANUP},
         {CLEANUP, ok, END}
 };
@@ -35,6 +37,8 @@ int main (int argc, char *argv[])
     memset(&opts, 0 , sizeof(struct server_opts));
     opts.argc = argc;
     opts.argv = argv;
+
+//    signal(SIGINT, sigHandler); //start the thread in SETUP, change the state to END when exit_flag is true
 
     while (1) {
         state_fun = state[cur_state];
@@ -77,8 +81,6 @@ static enum state_codes lookup_transitions(enum state_codes current_state, enum 
 
 int do_read(void *arg)
 {
-    printf("Reading...\n");
-
     struct server_opts *opts = (struct server_opts *) arg;
     struct sockaddr from_addr;
     socklen_t from_addr_len = sizeof(struct sockaddr_in);
@@ -91,57 +93,63 @@ int do_read(void *arg)
     client_seq_num = 0;
     server_seq_num = 0;
 
-    while(1)
-    {
-        rbytes = recvfrom(opts->sock_fd, header, HEADER_LEN, 0, &from_addr, &from_addr_len);
-        if(rbytes == -1)
-        {
-            if(exit_flag)
-            {
-                opts->msg= strdup("server closing\n");
-            }
-            else
-            {
-                opts->msg = strdup("recvfrom error\n");
-            }
-            break;
-        }
+    struct timeval timeout;
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
 
-        struct packet pkt;
-        deserialize_header(header, &pkt);
-        pkt.data = malloc(sizeof(pkt.header.data_len+1));
-        rbytes = recvfrom(opts->sock_fd, &pkt.data, pkt.header.data_len, 0,&from_addr, &from_addr_len);
-        if(rbytes == -1)
-        {
-            if(exit_flag)
-            {
-                opts->msg= strdup("server closing\n");
-            }
-            else
-            {
-                opts->msg = strdup("recvfrom error\n");
-            }
-            break;
-        }
-        pkt.data[pkt.header.data_len] = '\0';
-
-        if(pkt.header.seq_num < client_seq_num)
-        {
-            //RETURN ACK
-            return_ack(opts->sock_fd, &server_seq_num, pkt.header.seq_num, &from_addr, from_addr_len);
-            //IGNORE PACKET
-        }
-        else if(pkt.header.seq_num <= client_seq_num && pkt.header.seq_num < client_seq_num+WIN_SIZE)
-        {
-            //RETURN ACK
-            return_ack(opts->sock_fd, &server_seq_num, pkt.header.seq_num, &from_addr, from_addr_len);
-            //STASH AND DELIVER LOGIC
-            manage_window(&client_seq_num, window, &pkt);
-        }
-
-        memset(&pkt.header, 0, sizeof(struct packet_header));
-        free(pkt.data);
+    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+        perror("Error setting socket timeout");
+        close(opts->sock_fd);
+        exit(EXIT_FAILURE);
     }
+
+    rbytes = 0;
+    while(rbytes != HEADER_LEN)
+    {
+        printf("Reading...\n");
+        rbytes += recvfrom(opts->sock_fd, &header[rbytes], HEADER_LEN-rbytes, 0, &from_addr, &from_addr_len);
+        printf("rbytes: %zd\n", rbytes);
+    }
+    printf("first rbytes: %zd\n", rbytes);
+
+    struct packet *pkt = malloc(sizeof(struct packet));
+    pkt->header = malloc(sizeof(struct packet_header));
+    deserialize_header(header, pkt);
+    pkt->data = malloc(pkt->header->data_len);
+    print_packet_header(pkt);
+    rbytes = 0;
+    while(rbytes != pkt->header->data_len)
+    {
+        printf("Reading data...\n");
+        rbytes += recvfrom(opts->sock_fd, &pkt->data[rbytes], pkt->header->data_len-rbytes, 0,&from_addr, &from_addr_len);
+        printf("rbytes: %zd\n", rbytes);
+    }
+    printf("second rbytes: %zd\n", rbytes);
+    printf("pkt->data: %s\n", pkt->data);
+
+    if(pkt->header->seq_num < client_seq_num)
+    {
+        printf("Unexpected data arrived...\n");
+        //RETURN ACK
+        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
+        //IGNORE PACKET
+    }
+    else if(pkt->header->seq_num <= client_seq_num && pkt->header->seq_num < client_seq_num+WIN_SIZE)
+    {
+        printf("Expected data arrived...\n");
+        //RETURN ACK
+        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
+        //STASH AND DELIVER LOGIC
+        manage_window(&client_seq_num, window, pkt);
+    }
+    else
+    {
+        printf("Ignore...\n");
+    }
+    free(pkt->header);
+    free(pkt->data);
+    free(pkt);
+
 
     for(size_t i = 0; i < WIN_SIZE; i++)
     {
@@ -154,4 +162,13 @@ int do_read(void *arg)
     }
 
     return ok;
+}
+
+void print_packet_header(struct packet *pkt)
+{
+    printf("----------Packet Info----------\n");
+    printf("Seq Num: %d", pkt->header->seq_num);
+    printf("Ack Num: %d", pkt->header->ack_num);
+    printf("Flags: %d", pkt->header->flags);
+    printf("Data Len: %d", pkt->header->data_len);
 }

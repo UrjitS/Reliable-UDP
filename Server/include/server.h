@@ -48,7 +48,7 @@ struct packet_header {
 };
 
 struct packet {
-    struct packet_header header;
+    struct packet_header *header;
     char *data;
 };
 
@@ -70,6 +70,6 @@ void deliver_data(char *data);
 void reset_stash(struct stash *stash);
 void order_window(const uint32_t *client_seq_num, struct stash *window);
 void check_window(uint32_t *client_seq_num, struct stash *window);
-uint32_t compare_rel_num(const void *a, const void *b);
+void print_packet_header(struct packet *pkt);
 
 #endif

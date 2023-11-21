@@ -12,7 +12,7 @@ int end_state(void *arg);
 enum state_codes { ENTRY, PARSEARGS, SETUP,
         READ, FATALERROR, CLEANUP, END}; //must be the same order as states
 
-enum ret_codes { ok, error, repeat};
+enum ret_codes { ok, error, done};
 
 struct transition {
     enum state_codes src_state;

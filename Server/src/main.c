@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <signal.h>
 #include "server.h"
 
 int volatile exit_flag = false;

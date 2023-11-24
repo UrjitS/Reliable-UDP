@@ -294,6 +294,11 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
 void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
 {
     size_t count;
+
+    printf("---------ACK--------\n");
+    printf("server_seq_num: %d\n",server_seq_num);
+    printf("pkt_seq_num: %d\n",pkt_seq_num);
+    printf("data_len: %d\n",data_len);
     server_seq_num = htonl(server_seq_num);
     pkt_seq_num = htonl(pkt_seq_num);
     data_len = htons(data_len);
@@ -308,9 +313,9 @@ void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, u
     count += sizeof(uint8_t);
     memcpy(&ack[count], &data_len, sizeof(uint16_t));
     count += sizeof(uint16_t);
-    ack[count] = ETX;
+    ack[count] = '\3';
     count++;
-    ack[count] = ETX;
+    ack[count] = '\3';
 }
 
 int print_error(void *arg)

@@ -25,7 +25,6 @@
 #define WIN_SIZE 5
 #define ACK_SIZE 13
 #define ACK_DATA_LEN 2
-#define ETX '\x03'
 
 #define ACK 1
 

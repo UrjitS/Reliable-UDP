@@ -100,10 +100,10 @@ int do_read(void *arg)
         printf("ret: %d\n", ret);
         handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);
     }
-    if(ret == -1)
-    {
-        opts->msg = strdup("recvfrom error\n");
-    }
+//    if(ret == -1)
+//    {
+//        opts->msg = strdup("recvfrom error\n");
+//    }
 
     if(opts->msg)
     {
@@ -125,10 +125,10 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     {
         printf("rbytes: %zd\n", rbytes);
     }
-    if(rbytes == -1)
-    {
-        return -1;
-    }
+//    if(rbytes == -1)
+//    {
+//        return -1;
+//    }
 
     return 0;
 }

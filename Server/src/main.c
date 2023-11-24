@@ -182,6 +182,7 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     while(buffer[count-1] != ETX && buffer[count] != ETX && exit_flag == false)
     {
         ssize_t rbytes = recvfrom(sock_fd, &buffer[count], 1, 0, from_addr, from_addr_len);
+        printf("read char: %c\n", buffer[count]);
         if(rbytes > 0)
         {
             count += rbytes;

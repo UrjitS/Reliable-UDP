@@ -287,7 +287,6 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
     uint8_t ack;
 
     generate_ack(&ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
-    printf("%s\n", &ack);
     sendto(sock_fd, &ack, ACK_SIZE, 0, from_addr, *from_addr_len);
     (*server_seq_num)++;
 }
@@ -314,10 +313,9 @@ void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, u
     count += sizeof(uint8_t);
     memcpy(&ack[count], &data_len, sizeof(uint16_t));
     count += sizeof(uint16_t);
-    ack[count] = '?';
+    strncpy((char *) &ack[count], "\3", 1);
     count++;
-    ack[count] = '?';
-    printf("%s\n", ack);
+    strncpy((char *) &ack[count], "\3", 1);
 }
 
 int print_error(void *arg)

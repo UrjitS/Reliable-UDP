@@ -109,19 +109,6 @@ int set_up(void *arg) {
         return error;
     }
 
-//    int option = 1;
-//    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
-
-//    struct timeval timeout;
-//    timeout.tv_sec = 1;
-//    timeout.tv_usec = 0;
-//
-//    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
-//        opts->msg = strdup("Error setting socket timeout\n");
-//        close(opts->sock_fd);
-//        return error;
-//    }
-
     ret = bind(opts->sock_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
     if (ret == -1) {
         opts->msg = strdup("bind failed\n");
@@ -159,7 +146,7 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //IGNORE PACKET
     }
-    else if(pkt->header->seq_num <= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
+    else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
         printf("Expected data arrived...\n");
         //RETURN ACK
@@ -206,6 +193,7 @@ void check_window(uint32_t *client_seq_num, struct stash *window)
             deliver_data(window[i].data);
             reset_stash(&window[i]);
             (*client_seq_num)++;
+            printf("expected seq_num: %d", *client_seq_num);
         }
         else
         {
@@ -279,7 +267,7 @@ void free_pkt(struct packet *pkt)
     {
         if(pkt->header != NULL)
         {
-            printf("freeing pkt\n");
+            printf("freeing header\n");
             free(pkt->header);
         }
         if(pkt->data != NULL)
@@ -287,8 +275,6 @@ void free_pkt(struct packet *pkt)
             printf("freeing data\n");
             free(pkt->data);
         }
-        printf("freeing header\n");
-        free(pkt);
     }
 }
 

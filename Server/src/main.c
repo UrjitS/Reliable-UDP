@@ -95,10 +95,14 @@ int do_read(void *arg)
 
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-    printf("ret: %d", ret);
     if (ret > 0)
     {
+        printf("ret: %d\n", ret);
         handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);
+    }
+    if(ret == -1)
+    {
+        opts->msg = strdup("recvfrom error\n");
     }
 
     if(opts->msg)
@@ -117,7 +121,14 @@ int do_read(void *arg)
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len)
 {
     ssize_t rbytes = recvfrom(sock_fd, buffer, MAX_LEN, 0, from_addr, from_addr_len);
-    printf("rbytes: %zd\n", rbytes);
+    if(rbytes > 0)
+    {
+        printf("rbytes: %zd\n", rbytes);
+    }
+    if(rbytes == -1)
+    {
+        return -1;
+    }
 
     return 0;
 }

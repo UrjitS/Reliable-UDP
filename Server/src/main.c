@@ -100,9 +100,9 @@ int do_read(void *arg)
     timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     ret = 0;
+    printf("calling select\n");
     while (ret == 0)
     {
-        printf("calling select\n");
         ret = select(opts->sock_fd + 1, &readfds, NULL, NULL, &timeout);
         if (ret == -1)
         {

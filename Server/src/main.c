@@ -154,12 +154,8 @@ int do_read(void *arg)
     {
         printf("Ignore...\n");
     }
-    printf("freeing header\n");
-    free(pkt->header);
-    printf("freeing data\n");
-    free(pkt->data);
-    printf("freeing pkt\n");
-    free(pkt);
+
+    free_pkt(pkt);
 
     for(size_t i = 0; i < WIN_SIZE; i++)
     {
@@ -176,19 +172,8 @@ int do_read(void *arg)
 
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len)
 {
-    size_t count;
-
-    count = 0;
-    while(buffer[count-1] != ETX && buffer[count] != ETX && exit_flag == false)
-    {
-        ssize_t rbytes = recvfrom(sock_fd, &buffer[count], 1, 0, from_addr, from_addr_len);
-        if(rbytes > 0)
-        {
-            printf("rbytes: %zd\n", rbytes);
-            count += rbytes;
-        }
-    }
-    printf("bytes read: %zu", count);
+    ssize_t rbytes = recvfrom(sock_fd, buffer, MAX_LEN, 0, from_addr, from_addr_len);
+    printf("rbytes: %zd\n", rbytes);
 
     return 0;
 }

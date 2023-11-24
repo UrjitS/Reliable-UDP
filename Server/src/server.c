@@ -234,6 +234,25 @@ void deserialize_packet(char *header, struct packet *pkt)
     memcpy(&pkt->data, &header[count], pkt->header->data_len);
 }
 
+void free_pkt(struct packet *pkt)
+{
+    if(pkt != NULL)
+    {
+        if(pkt->header != NULL)
+        {
+            printf("freeing pkt\n");
+            free(pkt->header);
+        }
+        if(pkt->data != NULL)
+        {
+            printf("freeing data\n");
+            free(pkt->data);
+        }
+        printf("freeing header\n");
+        free(pkt);
+    }
+}
+
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
                 struct sockaddr *from_addr, socklen_t from_addr_len)
 {

@@ -284,14 +284,21 @@ void free_pkt(struct packet *pkt)
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
                 struct sockaddr *from_addr, const socklen_t *from_addr_len)
 {
-    uint8_t ack;
+    char *ack;
 
-    generate_ack(&ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
-    sendto(sock_fd, &ack, ACK_SIZE, 0, from_addr, *from_addr_len);
+    ack = NULL;
+    generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
+    sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
+    struct packet pkt;
+    deserialize_packet(ack, &pkt);
+    printf("---------ACK PKT--------\n");
+    printf("server_seq_num: %d\n",pkt.header->seq_num);
+    printf("pkt_seq_num: %d\n",pkt.header->ack_num);
+    printf("data_len: %d\n",pkt.header->data_len);
     (*server_seq_num)++;
 }
 
-void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
+void generate_ack(char *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
 {
     size_t count;
 
@@ -313,16 +320,10 @@ void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, u
     count += sizeof(uint8_t);
     memcpy(&ack[count], &data_len, sizeof(uint16_t));
     count += sizeof(uint16_t);
-    strncpy((char *) &ack[count], "\3", 1);
+    strncpy(&ack[count], "\3", 1);
     count++;
-    strncpy((char *) &ack[count], "\3", 1);
+    strncpy((&ack[count], "\3", 1);
 
-    struct packet pkt;
-    deserialize_packet((char *)ack, &pkt);
-    printf("---------ACK PKT--------\n");
-    printf("server_seq_num: %d\n",pkt.header->seq_num);
-    printf("pkt_seq_num: %d\n",pkt.header->ack_num);
-    printf("data_len: %d\n",pkt.header->data_len);
 }
 
 int print_error(void *arg)

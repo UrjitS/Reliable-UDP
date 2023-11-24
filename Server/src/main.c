@@ -124,13 +124,10 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     if(rbytes > 0)
     {
         printf("rbytes: %zd\n", rbytes);
+        return 0;
     }
-//    if(rbytes == -1)
-//    {
-//        return -1;
-//    }
+    return -1;
 
-    return 0;
 }
 
 void print_packet(struct packet *pkt)

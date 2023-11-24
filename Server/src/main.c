@@ -93,78 +93,22 @@ int do_read(void *arg)
     client_seq_num = 0;
     server_seq_num = 0;
 
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET((unsigned int)opts->sock_fd, &readfds);
-    ret = 0;
-//    printf("calling select\n");
-//    while (ret == 0)
-//    {
-//        ret = select(1, &readfds, NULL, NULL, NULL);
-//        if (ret == -1)
-//        {
-//            opts->msg = strdup("select error\n");
-//            return error;
-//        }
-//        if(exit_flag == true)
-//        {
-//            return done;
-//        }
-//    }
-//    printf("select returned: %d\n", ret);
-//    if(FD_ISSET((unsigned int)opts->sock_fd, &readfds))
-//    {
-//        printf("sock_fd: %d is set\n", opts->sock_fd);
-//        ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-//        if (ret == -1)
-//        {
-//            opts->msg = strdup("fill_buffer error\n");
-//            return error;
-//        }
-//        if(exit_flag == true)
-//        {
-//            return done;
-//        }
-//    }
-
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
     printf("ret: %d", ret);
-    struct packet *pkt = malloc(sizeof(struct packet));
-    pkt->header = malloc(sizeof(struct packet_header));
-    deserialize_packet(buffer, pkt);
-    print_packet(pkt);
-
-    if(pkt->header->seq_num < client_seq_num)
+    if (ret > 0)
     {
-        printf("Unexpected data arrived...\n");
-        //RETURN ACK
-        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
-        //IGNORE PACKET
-    }
-    else if(pkt->header->seq_num <= client_seq_num && pkt->header->seq_num < client_seq_num+WIN_SIZE)
-    {
-        printf("Expected data arrived...\n");
-        //RETURN ACK
-        return_ack(opts->sock_fd, &server_seq_num, pkt->header->seq_num, &from_addr, from_addr_len);
-        //STASH AND DELIVER LOGIC
-        manage_window(&client_seq_num, window, pkt);
-    }
-    else
-    {
-        printf("Ignore...\n");
-    }
-
-    free_pkt(pkt);
-
-    for(size_t i = 0; i < WIN_SIZE; i++)
-    {
-        reset_stash(&window[i]);
+        handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);
     }
 
     if(opts->msg)
     {
         return error;
+    }
+
+    if(exit_flag == true)
+    {
+        return done;
     }
 
     return ok;

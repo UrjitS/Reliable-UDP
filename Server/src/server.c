@@ -144,6 +144,42 @@ int set_up(void *arg) {
     return ok;
 }
 
+void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq_num, uint32_t *server_seq_num
+        , struct stash *window, struct sockaddr *from_addr, socklen_t *from_addr_len)
+{
+    struct packet *pkt = malloc(sizeof(struct packet));
+    pkt->header = malloc(sizeof(struct packet_header));
+    deserialize_packet(buffer, pkt);
+    print_packet(pkt);
+
+    if(pkt->header->seq_num < *client_seq_num)
+    {
+        printf("Unexpected data arrived...\n");
+        //RETURN ACK
+        return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
+        //IGNORE PACKET
+    }
+    else if(pkt->header->seq_num <= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
+    {
+        printf("Expected data arrived...\n");
+        //RETURN ACK
+        return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
+        //STASH AND DELIVER LOGIC
+        manage_window(client_seq_num, window, pkt);
+    }
+    else
+    {
+        printf("Ignore...\n");
+    }
+
+    free_pkt(pkt);
+
+    for(size_t i = 0; i < WIN_SIZE; i++)
+    {
+        reset_stash(&window[i]);
+    }
+}
+
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)
 {
     uint32_t pkt_seq_num;
@@ -254,13 +290,13 @@ void free_pkt(struct packet *pkt)
 }
 
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
-                struct sockaddr *from_addr, socklen_t from_addr_len)
+                struct sockaddr *from_addr, const socklen_t *from_addr_len)
 {
     uint8_t *ack;
 
     ack = malloc(ACK_SIZE);
     generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
-    sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, from_addr_len);
+    sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
     (*server_seq_num)++;
 }
 

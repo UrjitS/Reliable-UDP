@@ -64,9 +64,11 @@ int get_ip_family(const char *ip_addr);
 int parse_in_port_t(struct server_opts *opts);
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len);
 void deserialize_packet(char *header, struct packet *pkt);
+void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq_num, uint32_t *server_seq_num
+        , struct stash *window, struct sockaddr *from_addr, socklen_t *from_addr_len);
 void free_pkt(struct packet *pkt);
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
-                struct sockaddr *from_addr, socklen_t from_addr_len);
+                struct sockaddr *from_addr, const socklen_t *from_addr_len);
 void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len);
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt);
 void deliver_data(char *data);

@@ -36,6 +36,8 @@ struct server_opts
     int ip_family;
     int sock_fd;
     in_port_t host_port;
+    uint32_t client_seq_num;
+    uint32_t server_seq_num;
     char *msg;
     char *host_ip;
     char **argv;

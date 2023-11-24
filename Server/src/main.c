@@ -88,18 +88,13 @@ int do_read(void *arg)
     char buffer[MAX_LEN];
     struct stash window[WIN_SIZE];
     int ret;
-    uint32_t client_seq_num;
-    uint32_t server_seq_num;
-
-    client_seq_num = 0;
-    server_seq_num = 0;
 
     memset(window, 0, WIN_SIZE);
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
     if (ret == 0)
     {
-        handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);
+        handle_data_in(opts, buffer, &opts->client_seq_num, &opts->server_seq_num, window, &from_addr, &from_addr_len);
     }
 //    if(ret == -1)
 //    {

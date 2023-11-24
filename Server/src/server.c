@@ -127,6 +127,8 @@ int set_up(void *arg) {
         return error;
     }
     printf("---------------------------- Server Options ----------------------------\n");
+    opts->client_seq_num = 0;
+    opts->server_seq_num = 0;
     printf("Finished Set up\n");
     return ok;
 }
@@ -193,7 +195,7 @@ void check_window(uint32_t *client_seq_num, struct stash *window)
             deliver_data(window[i].data);
             reset_stash(&window[i]);
             (*client_seq_num)++;
-            printf("expected seq_num: %d", *client_seq_num);
+            printf("expected seq_num: %d\n", *client_seq_num);
         }
         else
         {

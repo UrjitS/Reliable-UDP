@@ -322,7 +322,7 @@ void generate_ack(char *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint
     count += sizeof(uint16_t);
     strncpy(&ack[count], "\3", 1);
     count++;
-    strncpy((&ack[count], "\3", 1);
+    strncpy(&ack[count], "\3", 1);
 
 }
 

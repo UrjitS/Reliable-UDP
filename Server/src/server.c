@@ -131,13 +131,13 @@ int set_up(void *arg) {
 //    printf("Server socket timeout: %ld\n", timeout.tv_sec);
     int flags = fcntl(opts->sock_fd, F_GETFL, 0);
     if (flags == -1) {
-        perror("fcntl error");
-        // Handle the error
+        opts->msg = strdup("F_GETFL failed\n");
+        return error;
     }
 
     if (fcntl(opts->sock_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-        perror("fcntl error");
-        // Handle the error
+        opts->msg = strdup("F_SETFL failed\n");
+        return error;
     }
     printf("---------------------------- Server Options ----------------------------\n");
     printf("Finished Set up\n");

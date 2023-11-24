@@ -184,7 +184,7 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
         ssize_t rbytes = recvfrom(sock_fd, &buffer[count], 1, 0, from_addr, from_addr_len);
         if(rbytes > 0)
         {
-            printf("read char: %c\n", buffer[count]);
+            printf("rbytes: %zd\n", rbytes);
             count += rbytes;
         }
     }

@@ -38,7 +38,7 @@ int main (int argc, char *argv[])
     opts.argc = argc;
     opts.argv = argv;
 
-//    signal(SIGINT, sigHandler); //start the thread in SETUP, change the state to END when exit_flag is true
+    signal(SIGINT, sigHandler);
 
     while (1) {
         state_fun = state[cur_state];
@@ -93,6 +93,7 @@ int do_read(void *arg)
     client_seq_num = 0;
     server_seq_num = 0;
 
+    memset(window, 0, WIN_SIZE);
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
     if (ret == 0)
@@ -111,6 +112,13 @@ int do_read(void *arg)
 
     if(exit_flag == true)
     {
+        for(size_t i = 0; i < WIN_SIZE; ++i)
+        {
+            if(window[i].data != NULL)
+            {
+                free(window[i].data);
+            }
+        }
         return done;
     }
 

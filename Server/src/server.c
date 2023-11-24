@@ -174,10 +174,10 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
 
     free_pkt(pkt);
 
-    for(size_t i = 0; i < WIN_SIZE; i++)
-    {
-        reset_stash(&window[i]);
-    }
+//    for(size_t i = 0; i < WIN_SIZE; i++)
+//    {
+//        reset_stash(&window[i]);
+//    }
 }
 
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)
@@ -207,6 +207,10 @@ void check_window(uint32_t *client_seq_num, struct stash *window)
             reset_stash(&window[i]);
             (*client_seq_num)++;
         }
+        else
+        {
+            break;
+        }
     }
 }
 
@@ -217,25 +221,25 @@ void order_window(const uint32_t *client_seq_num, struct stash *window)
     {
         if(window[i].cleared == 1)
         {
-            window[i].rel_num = window[i].seq_num - *client_seq_num;
-            window[window[i].rel_num] = window[i];
+            uint32_t new_rel = window[i].seq_num - *client_seq_num;
+            window[new_rel].rel_num = new_rel;
+            copy_stash(&window[i], &window[new_rel]);
+            reset_stash(&window[i]);
         }
     }
 
 }
 
+void copy_stash(const struct stash *src, struct stash *dest)
+{
+    dest->cleared = src->cleared;
+    dest->seq_num = src->seq_num;
+    dest->data = strdup(src->data);
+}
+
 void deliver_data(char *data)
 {
-//    size_t len;
-//
-//    len = strlen(data);
-//    len -= ACK_DATA_LEN;
-//
-//    for(size_t i = 0; i < len; i++)
-//    {
-//        printf("%c", data[i]);
-//    }
-    printf("Client: %s", data);
+    printf("Client: %s\n", data);
 }
 
 void reset_stash(struct stash *stash)

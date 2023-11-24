@@ -75,6 +75,7 @@ void deliver_data(char *data);
 void reset_stash(struct stash *stash);
 void order_window(const uint32_t *client_seq_num, struct stash *window);
 void check_window(uint32_t *client_seq_num, struct stash *window);
+void copy_stash(const struct stash *src, struct stash *dest);
 void print_packet(struct packet *pkt);
 
 #endif

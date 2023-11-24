@@ -112,15 +112,15 @@ int set_up(void *arg) {
 //    int option = 1;
 //    setsockopt(opts->sock_fd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
-    struct timeval timeout;
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
-
-    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
-        opts->msg = strdup("Error setting socket timeout\n");
-        close(opts->sock_fd);
-        return error;
-    }
+//    struct timeval timeout;
+//    timeout.tv_sec = 1;
+//    timeout.tv_usec = 0;
+//
+//    if (setsockopt(opts->sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) == -1) {
+//        opts->msg = strdup("Error setting socket timeout\n");
+//        close(opts->sock_fd);
+//        return error;
+//    }
 
     ret = bind(opts->sock_fd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
     if (ret == -1) {
@@ -128,7 +128,7 @@ int set_up(void *arg) {
         return error;
     }
 
-    printf("Server socket timeout: %ld\n", timeout.tv_sec);
+//    printf("Server socket timeout: %ld\n", timeout.tv_sec);
     printf("---------------------------- Server Options ----------------------------\n");
     printf("Finished Set up\n");
     return ok;

@@ -94,41 +94,38 @@ int do_read(void *arg)
     server_seq_num = 0;
 
     fd_set readfds;
-    struct timeval timeout;
     FD_ZERO(&readfds);
     FD_SET((unsigned int)opts->sock_fd, &readfds);
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
     ret = 0;
-    printf("calling select\n");
-    while (ret == 0)
-    {
-        ret = select(opts->sock_fd + 1, &readfds, NULL, NULL, &timeout);
-        if (ret == -1)
-        {
-            opts->msg = strdup("select error\n");
-            return error;
-        }
-        if(exit_flag == true)
-        {
-            return done;
-        }
-    }
-    printf("select returned: %d\n", ret);
-    if(FD_ISSET((unsigned int)opts->sock_fd, &readfds))
-    {
-        printf("sock_fd: %d is set\n", opts->sock_fd);
-        ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-        if (ret == -1)
-        {
-            opts->msg = strdup("fill_buffer error\n");
-            return error;
-        }
-        if(exit_flag == true)
-        {
-            return done;
-        }
-    }
+//    printf("calling select\n");
+//    while (ret == 0)
+//    {
+//        ret = select(1, &readfds, NULL, NULL, NULL);
+//        if (ret == -1)
+//        {
+//            opts->msg = strdup("select error\n");
+//            return error;
+//        }
+//        if(exit_flag == true)
+//        {
+//            return done;
+//        }
+//    }
+//    printf("select returned: %d\n", ret);
+//    if(FD_ISSET((unsigned int)opts->sock_fd, &readfds))
+//    {
+//        printf("sock_fd: %d is set\n", opts->sock_fd);
+//        ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
+//        if (ret == -1)
+//        {
+//            opts->msg = strdup("fill_buffer error\n");
+//            return error;
+//        }
+//        if(exit_flag == true)
+//        {
+//            return done;
+//        }
+//    }
 
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);

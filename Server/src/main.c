@@ -102,6 +102,7 @@ int do_read(void *arg)
     ret = 0;
     while (ret == 0)
     {
+        printf("calling select\n");
         ret = select(opts->sock_fd + 1, &readfds, NULL, NULL, &timeout);
         if (ret == -1)
         {
@@ -113,8 +114,10 @@ int do_read(void *arg)
             return done;
         }
     }
+    printf("select returned: %d\n", ret);
     if(FD_ISSET((unsigned int)opts->sock_fd, &readfds))
     {
+        printf("sock_fd: %d is set\n", opts->sock_fd);
         ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
         if (ret == -1)
         {

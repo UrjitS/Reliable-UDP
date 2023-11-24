@@ -36,7 +36,6 @@ int parse_args(void *arg)
     printf("Server IP Address: %s\n", opts->host_ip);
     printf("Server Domain: %d\n", opts->ip_family);
     printf("Server Port: %hu\n", opts->host_port);
-    printf("---------------------------- Server Options ----------------------------\n");
 
     return ok;
 
@@ -129,6 +128,8 @@ int set_up(void *arg) {
         return error;
     }
 
+    printf("Server socket timeout: %ld\n", timeout.tv_sec);
+    printf("---------------------------- Server Options ----------------------------\n");
     printf("Finished Set up\n");
     return ok;
 }

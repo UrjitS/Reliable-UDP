@@ -266,8 +266,7 @@ void deserialize_packet(char *header, struct packet *pkt)
     pkt->header->ack_num = ntohl(pkt->header->ack_num);
     pkt->header->data_len = ntohs(pkt->header->data_len);
 
-    pkt->data = malloc(pkt->header->data_len);
-    memcpy(&pkt->data, &header[count], pkt->header->data_len);
+    pkt->data = strndup(&header[count], pkt->header->data_len);
 }
 
 void free_pkt(struct packet *pkt)

@@ -46,4 +46,8 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     socket_fd = create_udp(bind_port)
 
     while options.RUNNING:
-        pass
+        data, addr = socket_fd.recvfrom(1024)  # buffer size is 1024 bytes
+        if b'\x03\x03' in data:  # ETX character is 0x03 in ASCII
+            break
+        if addr[0] != receiver_ip:
+            socket_fd.sendto(data, (receiver_ip, receiver_port))

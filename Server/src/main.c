@@ -86,15 +86,13 @@ int do_read(void *arg)
     struct sockaddr from_addr;
     socklen_t from_addr_len = sizeof(struct sockaddr_in);
     char buffer[MAX_LEN];
-    struct stash window[WIN_SIZE];
     int ret;
 
-    memset(window, 0, WIN_SIZE);
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
     if (ret == 0)
     {
-        handle_data_in(opts, buffer, &opts->client_seq_num, &opts->server_seq_num, window, &from_addr, &from_addr_len);
+        handle_data_in(opts, buffer, &opts->client_seq_num, &opts->server_seq_num, opts->window, &from_addr, &from_addr_len);
     }
 //    if(ret == -1)
 //    {
@@ -110,9 +108,9 @@ int do_read(void *arg)
     {
         for(size_t i = 0; i < WIN_SIZE; ++i)
         {
-            if(window[i].data != NULL)
+            if(opts->window[i].data != NULL)
             {
-                free(window[i].data);
+                free(opts->window[i].data);
             }
         }
         return done;

@@ -129,6 +129,7 @@ int set_up(void *arg) {
     printf("---------------------------- Server Options ----------------------------\n");
     opts->client_seq_num = 0;
     opts->server_seq_num = 0;
+    memset(opts->window, 0, WIN_SIZE);
     printf("Finished Set up\n");
     return ok;
 }

@@ -28,7 +28,13 @@
 #define ETX '\x03'
 
 #define ACK 1
-#define DATA 0
+
+struct stash {
+    int cleared; // 0 = cleared, 1 = not cleared
+    uint32_t rel_num;
+    uint32_t seq_num;
+    char *data;
+};
 
 struct server_opts
 {
@@ -41,6 +47,7 @@ struct server_opts
     char *msg;
     char *host_ip;
     char **argv;
+    struct stash window[WIN_SIZE];
 };
 
 struct packet_header {
@@ -52,13 +59,6 @@ struct packet_header {
 
 struct packet {
     struct packet_header *header;
-    char *data;
-};
-
-struct stash {
-    int cleared; // 0 = cleared, 1 = not cleared
-    uint32_t rel_num;
-    uint32_t seq_num;
     char *data;
 };
 

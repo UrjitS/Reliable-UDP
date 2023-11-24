@@ -179,17 +179,15 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     size_t count;
 
     count = 0;
-    while(buffer[count] != ETX && buffer[count+1] != ETX && exit_flag == false)
+    while(buffer[count-1] != ETX && buffer[count] != ETX && exit_flag == false)
     {
         ssize_t rbytes = recvfrom(sock_fd, &buffer[count], 1, 0, from_addr, from_addr_len);
         if(rbytes > 0)
         {
             count += rbytes;
-            char *str = strdup("count++\n");
-            write(STDOUT_FILENO, str, strlen(str));
-            free(str);
         }
     }
+    printf("bytes read: %zu", count);
 
     return 0;
 }

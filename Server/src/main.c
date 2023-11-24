@@ -97,7 +97,6 @@ int do_read(void *arg)
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
     if (ret == 0)
     {
-        printf("ret: %d\n", ret);
         handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);
     }
 //    if(ret == -1)
@@ -123,7 +122,7 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     ssize_t rbytes = recvfrom(sock_fd, buffer, MAX_LEN, 0, from_addr, from_addr_len);
     if(rbytes > 0)
     {
-        printf("rbytes: %zd\n", rbytes);
+        printf("handling data, rbytes: %zd\n", rbytes);
         return 0;
     }
     return -1;

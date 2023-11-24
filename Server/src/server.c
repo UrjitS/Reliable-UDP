@@ -284,15 +284,14 @@ void free_pkt(struct packet *pkt)
 void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
                 struct sockaddr *from_addr, const socklen_t *from_addr_len)
 {
-    uint8_t *ack;
+    uint8_t ack;
 
-    ack = NULL;
-    generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
-    sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
+    generate_ack(&ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
+    sendto(sock_fd, &ack, ACK_SIZE, 0, from_addr, *from_addr_len);
     (*server_seq_num)++;
 }
 
-uint8_t *generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
+void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
 {
     size_t count;
     server_seq_num = htonl(server_seq_num);
@@ -300,7 +299,6 @@ uint8_t *generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_nu
     data_len = htons(data_len);
 
     ack = malloc(ACK_SIZE);
-    
     count = 0;
     memcpy(&ack[count], &server_seq_num, sizeof(uint32_t));
     count += sizeof(uint32_t);

@@ -95,7 +95,7 @@ int do_read(void *arg)
 
     memset(buffer, 0, MAX_LEN);
     ret = fill_buffer(opts->sock_fd, buffer, &from_addr, &from_addr_len);
-    if (ret > 0)
+    if (ret == 0)
     {
         printf("ret: %d\n", ret);
         handle_data_in(opts, buffer, &client_seq_num, &server_seq_num, window, &from_addr, &from_addr_len);

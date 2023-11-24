@@ -30,6 +30,7 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
         }
 
         // Set the data field in the header to the input
+        networkingOptions.header->sequence_number++;
         networkingOptions.header->data = input;
 
         if (exit_flag) {

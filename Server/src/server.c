@@ -316,6 +316,13 @@ void generate_ack(uint8_t *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, u
     strncpy((char *) &ack[count], "\3", 1);
     count++;
     strncpy((char *) &ack[count], "\3", 1);
+
+    struct packet pkt;
+    deserialize_packet((char *)ack, &pkt);
+    printf("---------ACK PKT--------\n");
+    printf("server_seq_num: %d\n",pkt.header->seq_num);
+    printf("pkt_seq_num: %d\n",pkt.header->ack_num);
+    printf("data_len: %d\n",pkt.header->data_len);
 }
 
 int print_error(void *arg)

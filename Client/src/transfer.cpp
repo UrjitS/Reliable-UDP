@@ -5,22 +5,16 @@
 #include "networking.hpp"
 #include "transfer.hpp"
 
-#include <iostream>
-#include <limits>
-
 void send_input(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         std::string input;
 
         // Read up to 1010 bytes or until a newline is encountered
-        for (int i = 0; i < 1010; ++i) {
+        for (int i = 0; i < MAX_PACKET_LENGTH; ++i) {
             int ch = std::cin.get();
             if (ch == '\n') {
-//                printf("Newline encountered.\n");
-                break; // Stop reading if newline is encountered
+                break;
             } else if (ch == EOF) {
-                // Handle end-of-file (Ctrl+D on Unix)
-//                printf("EOF encountered.\n");
                 exit_flag = true;
                 return;
             }
@@ -45,9 +39,7 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
             if (exit_flag) {
                 return;
             }
-            if (ret_status == 1) {
-//                std::cout << "Window Size Reached." << std::endl;
-            } else {
+            if (ret_status == -1) {
                 std::cerr << "Failed to Send." << std::endl;
             }
         }

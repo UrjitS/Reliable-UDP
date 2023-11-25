@@ -3,6 +3,7 @@
 /Server/build/
 
 /Client/cmake-build-debug/
+/Client/book.txt
 /Client/build/
 
 /Proxy/cmake-build-debug/

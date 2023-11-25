@@ -151,9 +151,15 @@ void remove_packet_from_sent_packets(struct header_field& header) {
 uint32_t receive_acknowledgements(struct networking_options& networkingOptions, int timeout_seconds) {
     ssize_t ret_status;
 
+    modifying_global_variables.lock();
+
     if (window_size >= MAX_WINDOW) {
         increment_sent_counter();
     }
+
+    // Check if any packets need to be retransmitted
+    check_need_for_retransmission(networkingOptions);
+    modifying_global_variables.unlock();
 
     // Set up fd_set for select
     fd_set read_fds;
@@ -191,9 +197,6 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
     }
 
     modifying_global_variables.lock();
-
-    // Check if any packets need to be retransmitted
-    check_need_for_retransmission(networkingOptions);
 
     // Decode the acknowledgement
     struct header_field decoded_header = decode_string(buffer);

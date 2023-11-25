@@ -3,6 +3,9 @@ Implements the networking for the proxy
 """
 
 import socket
+import random
+import threading
+import time
 import options
 
 def print_ip():
@@ -36,6 +39,65 @@ def create_udp(bind_port: int):
 
     return sock
 
+def random_drop(drop_chance: int):
+    """
+    Returns True if the packet should be dropped, False otherwise.
+    """
+    return random.randint(1, 100) <= drop_chance
+
+def random_delay(delay_upper_bound: int):
+    """
+    Returns a random delay between the specified range.
+    """
+    return random.randint(0, delay_upper_bound)
+
+def delayed_send(socket_fd, data, address, delay):
+    """
+    Sends data after a delay.
+    """
+    time.sleep(delay / 1000)  # convert delay from ms to seconds
+    socket_fd.sendto(data, address)
+
+def forward_receiver(socket_fd, data, address):
+    """
+    Forwards data from the receiver to the sender
+    """
+    print("Forwarding receiver")
+
+    # Randomly drop packet
+    if random_drop(options.RECEIVER_DROP_CHANCE):
+        print("Dropped packet")
+        options.STATUS = "Dropped Sender Packet"
+        return
+
+    # Randomly delay packet
+    delay = random_delay(options.DELAY_UPPER_BOUND)
+    options.STATUS = f"Delaying Receiver packet by {delay}ms"
+
+    threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
+
+
+def forward_sender(socket_fd, data, address):
+    """
+    Forwards data from the sender to the receiver
+    """
+    print("Forwarding sender")
+
+    # Randomly drop packet
+    if random_drop(options.SENDER_DROP_CHANCE):
+        print("Dropped packet")
+        options.STATUS = "Dropped Receiver Packet"
+        return
+
+    # Randomly delay packet
+    delay = random_delay(options.DELAY_UPPER_BOUND)
+    print(f"Delaying packet by {delay}ms")
+    options.STATUS = f"Delaying Sender packet by {delay}ms"
+
+
+    threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
+
+
 def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     """
     Forwards data from the sender to the receiver
@@ -48,7 +110,7 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     socket_fd = create_udp(bind_port)
 
     while options.RUNNING:
-        data, addr = socket_fd.recvfrom(1024)  # buffer size is 1024 bytes
+        data, addr = socket_fd.recvfrom(1024)
 
         if not first_packet:
             client_addr = addr
@@ -56,9 +118,11 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
 
         if b'\x03\x03' in data:  # ETX character is 0x03 in ASCII
             if (addr is not None) and (addr[0] != receiver_ip):
-                socket_fd.sendto(data, (receiver_ip, receiver_port))
+                # Client -> Receiver
+                forward_receiver(socket_fd, data, (receiver_ip, receiver_port))
                 data = None
             elif addr is not None:
-                socket_fd.sendto(data, client_addr)
+                # Receiver -> Client
+                forward_sender(socket_fd, data, client_addr)
                 data = None
     

@@ -16,9 +16,11 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
         for (int i = 0; i < 1010; ++i) {
             int ch = std::cin.get();
             if (ch == '\n') {
+//                printf("Newline encountered.\n");
                 break; // Stop reading if newline is encountered
             } else if (ch == EOF) {
                 // Handle end-of-file (Ctrl+D on Unix)
+//                printf("EOF encountered.\n");
                 exit_flag = true;
                 return;
             }
@@ -28,7 +30,7 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
         if (input.empty()) {
             continue;
         }
-
+        printf("Sending: %s\n", input.c_str());
         // Set the data field in the header to the input
         networkingOptions.header->sequence_number++;
         networkingOptions.header->data = input;
@@ -44,7 +46,7 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
                 return;
             }
             if (ret_status == 1) {
-                std::cout << "Window Size Reached." << std::endl;
+//                std::cout << "Window Size Reached." << std::endl;
             } else {
                 std::cerr << "Failed to Send." << std::endl;
             }
@@ -59,9 +61,9 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 void read_response(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         // Call receive_acknowledgements
-        receive_acknowledgements(networkingOptions, 1);
+        receive_acknowledgements(networkingOptions, 10);
 
-//         Sleep for a certain duration before rechecking for acknowledgments
+        // Sleep for a certain duration before rechecking for acknowledgments
         std::chrono::milliseconds sleep_duration(100); // Adjust the duration as needed
         std::this_thread::sleep_for(sleep_duration);
     }

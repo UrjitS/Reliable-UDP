@@ -51,3 +51,4 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
             break
         if addr[0] != receiver_ip:
             socket_fd.sendto(data, (receiver_ip, receiver_port))
+    

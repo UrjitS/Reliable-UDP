@@ -44,9 +44,6 @@ void increment_sent_counter() {
         sent_packet.sent_counter++;
 
     }
-//    for (auto & sent_packet : sent_packets) {
-//        sent_packet.sent_counter++;
-//    }
 }
 
 ssize_t send_packet_over(struct networking_options& networkingOptions, const std::string& packet) {
@@ -151,7 +148,7 @@ void remove_packet_from_sent_packets(struct header_field& header) {
 }
 
 
-int receive_acknowledgements(struct networking_options& networkingOptions, int timeout_seconds) {
+uint32_t receive_acknowledgements(struct networking_options& networkingOptions, int timeout_seconds) {
     ssize_t ret_status;
 
     if (window_size >= MAX_WINDOW) {
@@ -175,12 +172,12 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
         // Timeout occurred
         modifying_global_variables.unlock();
         increment_sent_counter();
-        return -1;
+        return 1;
     } else if (ret_status < 0) {
         // Error in select
         perror("Select failed");
         modifying_global_variables.unlock();
-        return -1;
+        return 0;
     }
 
     // Receive the acknowledgement
@@ -190,7 +187,7 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
     if (ret_status < 0) {
         perror("Receive Failed");
         modifying_global_variables.unlock();
-        return -1;
+        return 0;
     }
 
     modifying_global_variables.lock();
@@ -204,10 +201,11 @@ int receive_acknowledgements(struct networking_options& networkingOptions, int t
 
     std::cout << "Seq: " << decoded_header.ack_number << std::endl;
     std::cout << "Ack: " << decoded_header.ack_number << std::endl;
-    std::cout << "Data Length: " << decoded_header.data_length << std::endl;
     // Remove the packet from the list of sent packets
     remove_packet_from_sent_packets(decoded_header);
 
     modifying_global_variables.unlock();
-    return false;
+
+    // Return the acknowledgement number except for the first packet
+    return decoded_header.ack_number == 0 ? 1 : decoded_header.ack_number;
 }

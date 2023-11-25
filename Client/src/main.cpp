@@ -72,6 +72,12 @@ int main(int argc, char * argv[]) {
     networkingOptions.socket_fd = -1;
     networkingOptions.program_name = argv[0];
 
+    if (isatty(fileno(stdin))) {
+        networkingOptions.terminal_input = true;
+    } else {
+        networkingOptions.terminal_input = false;
+    }
+
     parse_arguments(argc, argv, networkingOptions);
     if (!setup_connection(networkingOptions)) {
         display_error(networkingOptions);

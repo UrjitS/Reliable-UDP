@@ -21,6 +21,7 @@ struct networking_options {
     std::string device_ip_address;
     std::string receiver_ip_address;
     in_port_t receiver_port;
+    bool terminal_input;
 };
 
 /**

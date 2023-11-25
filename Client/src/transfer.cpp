@@ -5,20 +5,32 @@
 #include "networking.hpp"
 #include "transfer.hpp"
 
+bool sent_file = false;
+uint32_t last_ack = 0;
+
 void send_input(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         std::string input;
 
-        // Read up to 1010 bytes or until a newline is encountered
+        // Read up to 1010 bytes or until Enter is pressed
         for (int i = 0; i < MAX_PACKET_LENGTH; ++i) {
             int ch = std::cin.get();
-            if (ch == '\n') {
-                break;
-            } else if (ch == EOF) {
-                exit_flag = true;
-                return;
+
+            if (networkingOptions.terminal_input) {
+                if (ch == '\n') {
+                    // Enter key pressed, break the loop
+                    break;
+                }
+                input.push_back(static_cast<char>(ch));
+            } else {
+                if (ch == EOF) {
+                    // End of file reached
+                    sent_file = true;
+                    last_ack = networkingOptions.header->sequence_number;
+                    break;
+                }
+                input.push_back(static_cast<char>(ch));
             }
-            input.push_back(static_cast<char>(ch));
         }
 
         if (input.empty()) {
@@ -53,7 +65,17 @@ void send_input(struct networking_options& networkingOptions, volatile int& exit
 void read_response(struct networking_options& networkingOptions, volatile int& exit_flag) {
     while (!exit_flag) {
         // Call receive_acknowledgements
-        receive_acknowledgements(networkingOptions, 10);
+        uint32_t ack_number = receive_acknowledgements(networkingOptions, 10);
+
+        if (ack_number == 0) {
+            std::cerr << "Failed to Receive Acknowledgement." << std::endl;
+            break;
+        }
+
+        if (sent_file && ack_number == last_ack) {
+            std::cout << "File Sent Successfully." << std::endl;
+            exit_flag = true;
+        }
 
         // Sleep for a certain duration before rechecking for acknowledgments
         std::chrono::milliseconds sleep_duration(100); // Adjust the duration as needed

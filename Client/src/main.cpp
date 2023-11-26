@@ -72,7 +72,7 @@ int main(int argc, char * argv[]) {
     networkingOptions.socket_fd = -1;
     networkingOptions.program_name = argv[0];
     networkingOptions.stats_file = fopen("output.txt", "w");
-
+    networkingOptions.time_started = time(nullptr);
     if (networkingOptions.stats_file == nullptr) {
         perror("Failed to open file");
         return EXIT_FAILURE;

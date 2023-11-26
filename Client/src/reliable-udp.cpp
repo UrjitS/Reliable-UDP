@@ -72,8 +72,8 @@ int send_packet(struct networking_options& networkingOptions) {
 
     modifying_global_variables.lock();
 
-    networkingOptions.header->time_sent = time(nullptr);
     // Add to sent packets
+    networkingOptions.header->time_sent = time(nullptr);
     sent_packets.push_back(*networkingOptions.header);
 
     // Send the packet
@@ -152,7 +152,8 @@ void remove_packet_from_sent_packets(struct networking_options& networkingOption
         if (it->sequence_number == ack_number) {
             // Calculate the time taken
             it->time_ack = time(nullptr);
-            time_t time_taken = it->time_ack - it->time_sent;
+//            time_t time_taken = it->time_ack - networkingOptions.time_started;
+            time_t time_taken = (it->time_ack - it->time_sent);
             write_data_to_file(networkingOptions.stats_file, it->sequence_number, time_taken);
 
             // Remove the packet from the list of sent packets

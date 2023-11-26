@@ -5,11 +5,14 @@
 /Client/cmake-build-debug/
 /Client/book.txt
 /Client/build/
+/Client/output.txt
 
 /Proxy/cmake-build-debug/
 /Proxy/build/
 /Proxy/env
 /Proxy/__pycache__/
+
+/Graph/output.txt
 
 /.idea/
 /.vscode/

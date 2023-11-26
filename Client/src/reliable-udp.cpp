@@ -17,6 +17,8 @@ void increment_sent_counter();
 ssize_t send_packet_over(struct networking_options& networkingOptions, const std::string& packet);
 void check_need_for_retransmission(struct networking_options& networkingOptions);
 struct header_field decode_string(char * packet_raw);
+void write_data_to_file(FILE * stats_file, uint32_t sequence_number, time_t time_taken);
+void remove_packet_from_sent_packets(struct networking_options& networkingOptions, uint32_t ack_number);
 
 std::string pack_header(struct header_field * header) {
     header->data_length = header->data.length() + 3;
@@ -62,7 +64,7 @@ int send_packet(struct networking_options& networkingOptions) {
     ssize_t ret_status;
 
     // Make sure the window size is not exceeded
-    if (window_size >= MAX_WINDOW) {
+    if (window_size > MAX_WINDOW) {
         return 1;
     }
 
@@ -70,6 +72,7 @@ int send_packet(struct networking_options& networkingOptions) {
 
     modifying_global_variables.lock();
 
+    networkingOptions.header->time_sent = time(nullptr);
     // Add to sent packets
     sent_packets.push_back(*networkingOptions.header);
 
@@ -117,10 +120,10 @@ struct header_field decode_string(char * packet_raw) {
 
 void check_need_for_retransmission(struct networking_options& networkingOptions) {
     // Iterate over the elements up to a maximum of the first five
-    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>(5)); ++i) {
+    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>(3)); ++i) {
         auto& sent_packet = sent_packets[i];
 
-        if (sent_packet.sent_counter >= 20) {
+        if (sent_packet.sent_counter >= 30) {
             printf("Retransmitting packet with sequence number %d\n", sent_packet.sequence_number);
             // Retransmit packet
             std::string packet = pack_header(&sent_packet);
@@ -136,11 +139,24 @@ void check_need_for_retransmission(struct networking_options& networkingOptions)
     }
 }
 
+void write_data_to_file(FILE * stats_file, uint32_t sequence_number, time_t time_taken) {
+    // Write the data to the file
+    fprintf(stats_file, "%d, %ld\n", sequence_number, time_taken);
 
-void remove_packet_from_sent_packets(struct header_field& header) {
-    for (auto & sent_packet : sent_packets) {
-        if (sent_packet.sequence_number == header.ack_number) {
-            sent_packets.erase(sent_packets.begin());
+    // Flush the file
+    fflush(stats_file);
+}
+
+void remove_packet_from_sent_packets(struct networking_options& networkingOptions, uint32_t ack_number) {
+    for (auto it = sent_packets.begin(); it != sent_packets.end(); ++it) {
+        if (it->sequence_number == ack_number) {
+            // Calculate the time taken
+            it->time_ack = time(nullptr);
+            time_t time_taken = it->time_ack - it->time_sent;
+            write_data_to_file(networkingOptions.stats_file, it->sequence_number, time_taken);
+
+            // Remove the packet from the list of sent packets
+            sent_packets.erase(it); // Update iterator after erasing
             window_size--;
             return;
         }
@@ -153,7 +169,7 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
 
     modifying_global_variables.lock();
 
-    if (window_size >= MAX_WINDOW) {
+    if (window_size > MAX_WINDOW) {
         increment_sent_counter();
     }
 
@@ -202,10 +218,11 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
     struct header_field decoded_header = decode_string(buffer);
     std::cout << "----------RECEIVING----------" << std::endl;
 
-    std::cout << "Seq: " << decoded_header.ack_number << std::endl;
+    std::cout << "Seq: " << decoded_header.sequence_number << std::endl;
     std::cout << "Ack: " << decoded_header.ack_number << std::endl;
     // Remove the packet from the list of sent packets
-    remove_packet_from_sent_packets(decoded_header);
+    remove_packet_from_sent_packets(networkingOptions, decoded_header.ack_number);
+    remove_packet_from_sent_packets(networkingOptions, decoded_header.ack_number);
 
     modifying_global_variables.unlock();
 

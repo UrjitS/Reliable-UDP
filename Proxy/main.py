@@ -7,6 +7,7 @@ import ipaddress
 import threading
 from ui import UI
 from networking import forward_data
+import options
 
 def check_ip (ip):
     """
@@ -58,7 +59,11 @@ def main ():
     print(f"% Chance to drop data: {args.dropd}")
     print(f"% Chance to drop ack:  {args.dropa}")
 
-
+    options.SENDER_DROP_CHANCE = args.dropd
+    options.RECEIVER_DROP_CHANCE = args.dropa
+    options.DELAY_DATA_UPPER_BOUND = args.delays
+    options.DELAY_ACK_UPPER_BOUND = args.delayr
+    
     forward_thread = threading.Thread(target=forward_data, args=(args.rip, args.rport, args.port))
     forward_thread.start()
 

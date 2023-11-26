@@ -4,6 +4,7 @@
 
 #include <netinet/in.h>
 #include <string>
+#include <ctime>
 
 #define DEFAULT_PORT 5050
 
@@ -22,6 +23,7 @@ struct networking_options {
     std::string receiver_ip_address;
     in_port_t receiver_port;
     bool terminal_input;
+    FILE * stats_file;
 };
 
 /**
@@ -42,6 +44,8 @@ struct header_field {
     uint16_t data_length;
     std::string data;
     uint64_t sent_counter;
+    time_t time_sent;
+    time_t time_ack;
 };
 
 /**

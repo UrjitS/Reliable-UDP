@@ -71,6 +71,12 @@ int main(int argc, char * argv[]) {
     networkingOptions.header = &header;
     networkingOptions.socket_fd = -1;
     networkingOptions.program_name = argv[0];
+    networkingOptions.stats_file = fopen("output.txt", "w");
+
+    if (networkingOptions.stats_file == nullptr) {
+        perror("Failed to open file");
+        return EXIT_FAILURE;
+    }
 
     if (isatty(fileno(stdin))) {
         networkingOptions.terminal_input = true;
@@ -79,6 +85,7 @@ int main(int argc, char * argv[]) {
     }
 
     parse_arguments(argc, argv, networkingOptions);
+
     if (!setup_connection(networkingOptions)) {
         display_error(networkingOptions);
     }
@@ -189,7 +196,10 @@ void clean_resources(struct networking_options& networkingOptions) {
     if (networkingOptions.socket_fd > 0) {
         close(networkingOptions.socket_fd);
     }
-//    free(networkingOptions.ipv4_addr);
+
+    if (networkingOptions.stats_file != nullptr) {
+        fclose(networkingOptions.stats_file);
+    }
 
     exit(EXIT_SUCCESS);
 }

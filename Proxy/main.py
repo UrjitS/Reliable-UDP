@@ -42,8 +42,8 @@ def main ():
     parser.add_argument('-rip',    type=str, required=True, help='Receiver IP Address')
     parser.add_argument('-rport',  type=int, required=True, help='Receiver Port Number')
     parser.add_argument('-port',   type=int, required=True, help='Port to bind to')
-    parser.add_argument('-dropd',  type=int, required=True, help='% Chance to drop data')
-    parser.add_argument('-dropa',  type=int, required=True, help='% Chance to drop ack')
+    parser.add_argument('-dropd',  type=int, required=True, help='Percent Chance to drop data')
+    parser.add_argument('-dropa',  type=int, required=True, help='Percent Chance to drop ack')
     parser.add_argument('-delays', type=int, required=True, help='(ms) Delay for sending data')
     parser.add_argument('-delayr', type=int, required=True, help='(ms) Delay for sending ack')
 

@@ -63,10 +63,10 @@ class UI:
         Save the changes made in the form to options.py.
         """
         try:
-            sender_drop_chance = int(self.sender_drop_chance.get())
-            receiver_drop_chance = int(self.receiver_drop_chance.get())
+            sender_drop_chance    = int(self.sender_drop_chance.get())
+            receiver_drop_chance  = int(self.receiver_drop_chance.get())
             delay_data_range_high = int(self.delay_data_range_high.get())
-            delay_ack_range_high = int(self.delay_ack_range_low.get())
+            delay_ack_range_high  = int(self.delay_ack_range_low.get())
 
             if not 0 <= sender_drop_chance <= 100:
                 raise ValueError("Sender Drop Chance must be an integer between 0 and 100.")
@@ -86,6 +86,7 @@ class UI:
             print(f"RECEIVER_DROP_CHANCE set to {receiver_drop_chance}")
             print(f"DELAY_DATA_RANGE set to {delay_data_range_high}")
             print(f"DELAY_ACK_RANGE set to {delay_ack_range_high}")
+            options.STATUS = "Changes saved."
 
         except ValueError as e:
             tkinter.messagebox.showerror("Input Error", str(e))

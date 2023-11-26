@@ -6,6 +6,7 @@ import socket
 import random
 import threading
 import time
+import errno
 import options
 
 def print_ip():
@@ -71,7 +72,7 @@ def forward_receiver(socket_fd, data, address):
         return
 
     # Randomly delay packet
-    delay = random_delay(options.DELAY_UPPER_BOUND)
+    delay = random_delay(options.DELAY_ACK_UPPER_BOUND)
     options.STATUS = f"Delaying Receiver packet by {delay}ms"
 
     threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
@@ -79,7 +80,7 @@ def forward_receiver(socket_fd, data, address):
 
 def forward_sender(socket_fd, data, address):
     """
-    Forwards data from the sender to the receiver
+    Forwards ack from the sender to the receiver
     """
     print("Forwarding sender")
 
@@ -90,7 +91,7 @@ def forward_sender(socket_fd, data, address):
         return
 
     # Randomly delay packet
-    delay = random_delay(options.DELAY_UPPER_BOUND)
+    delay = random_delay(options.DELAY_DATA_UPPER_BOUND)
     print(f"Delaying packet by {delay}ms")
     options.STATUS = f"Delaying Sender packet by {delay}ms"
 
@@ -108,21 +109,25 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     print("Forwarding data")
 
     socket_fd = create_udp(bind_port)
+    socket_fd.setblocking(False)
 
     while options.RUNNING:
-        data, addr = socket_fd.recvfrom(1024)
+        try:
+            data, addr = socket_fd.recvfrom(1024)
 
-        if not first_packet:
-            client_addr = addr
-            first_packet = True
+            if not first_packet:
+                client_addr = addr
+                first_packet = True
 
-        if b'\x03\x03' in data:  # ETX character is 0x03 in ASCII
-            if (addr is not None) and (addr[0] != receiver_ip):
-                # Client -> Receiver
-                forward_receiver(socket_fd, data, (receiver_ip, receiver_port))
-                data = None
-            elif addr is not None:
-                # Receiver -> Client
-                forward_sender(socket_fd, data, client_addr)
-                data = None
-    
+            if b'\x03\x03' in data:  # ETX character is 0x03 in ASCII
+                if (addr is not None) and (addr[0] != receiver_ip):
+                    # Client -> Receiver
+                    forward_receiver(socket_fd, data, (receiver_ip, receiver_port))
+                    data = None
+                elif addr is not None:
+                    # Receiver -> Client
+                    forward_sender(socket_fd, data, client_addr)
+                    data = None
+        except socket.error as e:
+            if e.args[0] != errno.EAGAIN and e.args[0] != errno.EWOULDBLOCK:
+                raise

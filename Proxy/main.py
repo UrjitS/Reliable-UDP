@@ -1,5 +1,5 @@
 """
-Yes
+Main file for the proxy server
 """
 
 import argparse
@@ -25,26 +25,41 @@ def check_port (port):
     """
     return bool(isinstance(port, int) and 0 <= port <= 65535)
 
+
+def check_drop (drop):
+    """
+    Checks if the drop is valid
+    """
+    return bool(isinstance(drop, int) and 0 <= drop <= 100)
+
+
 def main ():
     """
     Main function for the proxy server
     """
     parser = argparse.ArgumentParser(description='Proxy server program.')
-    parser.add_argument('-a', type=str, required=True, help='Receiver IP Address')
-    parser.add_argument('-r', type=int, required=True, help='Receiver Port Number')
-    parser.add_argument('-p', type=int, required=True, help='Port to bind to')
+    parser.add_argument('-rip',    type=str, required=True, help='Receiver IP Address')
+    parser.add_argument('-rport',  type=int, required=True, help='Receiver Port Number')
+    parser.add_argument('-port',   type=int, required=True, help='Port to bind to')
+    parser.add_argument('-dropd',  type=int, required=True, help='% Chance to drop data')
+    parser.add_argument('-dropa',  type=int, required=True, help='% Chance to drop ack')
+    parser.add_argument('-delays', type=int, required=True, help='(ms) Delay for sending data')
+    parser.add_argument('-delayr', type=int, required=True, help='(ms) Delay for sending ack')
 
     args = parser.parse_args()
 
-    if not check_ip(args.a) or not check_port(args.r) or not check_port(args.p):
+    if not check_ip(args.rip) or not check_port(args.rport) or not check_port(args.port) or not check_drop(args.dropd) or not check_drop(args.dropa):
         print("Invalid arguments.")
         return
 
-    print(f"Receiver IP Address: {args.a}")
-    print(f"Receiver Port Number: {args.r}")
-    print(f"Port to bind to: {args.p}")
+    print(f"Receiver IP Address:   {args.rip}")
+    print(f"Receiver Port Number:  {args.rport}")
+    print(f"Port to bind to:       {args.port}")
+    print(f"% Chance to drop data: {args.dropd}")
+    print(f"% Chance to drop ack:  {args.dropa}")
 
-    forward_thread = threading.Thread(target=forward_data, args=(args.a, args.r, args.p))
+
+    forward_thread = threading.Thread(target=forward_data, args=(args.rip, args.rport, args.port))
     forward_thread.start()
 
     UI().window.mainloop()

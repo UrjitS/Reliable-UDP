@@ -110,7 +110,7 @@ bool setup_connection(struct networking_options& networkingOptions) {
     // Create a socket
     int socket_fd = create_udp_socket(networkingOptions);
 
-    if (!socket_fd) {
+    if (socket_fd == -1) {
         networkingOptions.message = "Failed to create socket";
         return false;
     }

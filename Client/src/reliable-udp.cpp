@@ -8,16 +8,63 @@
 #include <iostream>
 #include <sys/time.h>
 
+/**
+ * @brief Mutex to lock the sent packets vector
+ */
 std::mutex modifying_global_variables;
+/**
+ * @brief Vector containing all the sent packets
+ */
 std::vector<header_field> sent_packets = std::vector<header_field>();
+/**
+ * @brief Count of the number of packets in the window
+ */
 int window_size = 0;
 
+/**
+ * @brief Pack the header into a string
+ * @param header Header struct
+ * @return String containing the header
+ */
 std::string pack_header(struct header_field* header);
+/**
+ * @brief Increment the sent counter for each packet in the sent packets vector
+ * @return void
+ */
 void increment_sent_counter();
+/**
+ * @brief Send a packet to the receiver
+ * @param networkingOptions Networking options struct
+ * @param packet Packet to send
+ * @return Number of bytes sent
+ */
 ssize_t send_packet_over(struct networking_options& networkingOptions, const std::string& packet);
+/**
+ * @brief Iterate over the sent packets and check if any need to be retransmitted
+ * @param networkingOptions Networking options struct
+ * @return void
+ */
 void check_need_for_retransmission(struct networking_options& networkingOptions);
-struct header_field decode_string(char * packet_raw);
+/**
+ * @brief Decode the string into a header struct
+ * @param packet_raw String containing the packet
+ * @return Acknowledgement number
+ */
+uint32_t decode_string(char * packet_raw);
+/**
+ * @brief Write the data to the file
+ * @param stats_file File to write to
+ * @param sequence_number Sequence number of the packet
+ * @param time_taken Time taken to receive acknowledgement
+ * @return void
+ */
 void write_data_to_file(FILE * stats_file, uint32_t sequence_number, time_t time_taken);
+/**
+ * @brief Remove the packet from the list of sent packets
+ * @param networkingOptions Networking options struct
+ * @param ack_number Acknowledgement number
+ * @return void
+ */
 void remove_packet_from_sent_packets(struct networking_options& networkingOptions, uint32_t ack_number);
 
 std::string pack_header(struct header_field * header) {
@@ -41,7 +88,7 @@ std::string pack_header(struct header_field * header) {
 
 void increment_sent_counter() {
     // Iterate over the elements up to a maximum of the first five
-    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>(5)); ++i) {
+    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>((WINDOW_SIZE + 1))); ++i) {
         auto& sent_packet = sent_packets[i];
         sent_packet.sent_counter++;
 
@@ -64,7 +111,7 @@ int send_packet(struct networking_options& networkingOptions) {
     ssize_t ret_status;
 
     // Make sure the window size is not exceeded
-    if (window_size > MAX_WINDOW) {
+    if (window_size > WINDOW_SIZE) {
         return 1;
     }
 
@@ -93,37 +140,34 @@ int send_packet(struct networking_options& networkingOptions) {
 }
 
 
-struct header_field decode_string(char * packet_raw) {
-    struct header_field decoded_header;
+uint32_t decode_string(char * packet_raw) {
 
     // Extract fields from the packet
     uint32_t seq_number;
     uint32_t ack_number;
-    uint8_t flags;
-    uint16_t data_length;
 
     std::memcpy(&seq_number, &packet_raw[0], sizeof(seq_number));
     std::memcpy(&ack_number, &packet_raw[4], sizeof(ack_number));
-    std::memcpy(&flags, &packet_raw[8], sizeof(flags));
-    std::memcpy(&data_length, &packet_raw[9], sizeof(data_length));
 
-    // Convert network byte order to host byte order
-    decoded_header.sequence_number = ntohl(seq_number);
-    decoded_header.ack_number = ntohl(ack_number);
-    decoded_header.flags = ntohs(flags);
-    decoded_header.data_length = ntohs(data_length);
+    seq_number = ntohl(seq_number);
+    ack_number = ntohl(ack_number);
+
+    std::cout << "----------RECEIVING----------" << std::endl;
+
+    std::cout << "Seq: " << seq_number << std::endl;
+    std::cout << "Ack: " << ack_number << std::endl;
 
 
-    return decoded_header;
+    return ack_number;
 }
 
 
 void check_need_for_retransmission(struct networking_options& networkingOptions) {
     // Iterate over the elements up to a maximum of the first five
-    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>(3)); ++i) {
+    for (size_t i = 0; i < std::min(sent_packets.size(), static_cast<size_t>((WINDOW_SIZE + 1))); ++i) {
         auto& sent_packet = sent_packets[i];
 
-        if (sent_packet.sent_counter >= 30) {
+        if (sent_packet.sent_counter >= RETRANSMISSION_COUNT) {
             printf("Retransmitting packet with sequence number %d\n", sent_packet.sequence_number);
             // Retransmit packet
             std::string packet = pack_header(&sent_packet);
@@ -170,7 +214,7 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
 
     modifying_global_variables.lock();
 
-    if (window_size > MAX_WINDOW) {
+    if (window_size > WINDOW_SIZE) {
         increment_sent_counter();
     }
 
@@ -193,13 +237,13 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
 
     if (ret_status == 0) {
         // Timeout occurred
-        modifying_global_variables.unlock();
+        modifying_global_variables.lock();
         increment_sent_counter();
+        modifying_global_variables.unlock();
         return 1;
     } else if (ret_status < 0) {
         // Error in select
         perror("Select failed");
-        modifying_global_variables.unlock();
         return 0;
     }
 
@@ -209,24 +253,19 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
 
     if (ret_status < 0) {
         perror("Receive Failed");
-        modifying_global_variables.unlock();
         return 0;
     }
 
     modifying_global_variables.lock();
 
     // Decode the acknowledgement
-    struct header_field decoded_header = decode_string(buffer);
-    std::cout << "----------RECEIVING----------" << std::endl;
+    uint32_t ack_number = decode_string(buffer);
 
-    std::cout << "Seq: " << decoded_header.sequence_number << std::endl;
-    std::cout << "Ack: " << decoded_header.ack_number << std::endl;
     // Remove the packet from the list of sent packets
-    remove_packet_from_sent_packets(networkingOptions, decoded_header.ack_number);
-    remove_packet_from_sent_packets(networkingOptions, decoded_header.ack_number);
+    remove_packet_from_sent_packets(networkingOptions, ack_number);
 
     modifying_global_variables.unlock();
 
     // Return the acknowledgement number except for the first packet
-    return decoded_header.ack_number == 0 ? 1 : decoded_header.ack_number;
+    return ack_number == 0 ? 1 : ack_number;
 }

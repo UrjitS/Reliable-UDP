@@ -28,14 +28,6 @@ struct networking_options {
 };
 
 /**
- * @brief Flag Values for header field
- */
-enum {
-    ACK = 0x01,
-    DATA = 0x02,
-};
-
-/**
  * @brief Header field struct
  */
 struct header_field {

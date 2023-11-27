@@ -5,7 +5,13 @@
 #include "networking.hpp"
 #include "transfer.hpp"
 
+/**
+ * @brief Boolean to check if a file has been sent entirely
+ */
 bool sent_file = false;
+/**
+ * @brief Last acknowledgement number received
+ */
 uint32_t last_ack = 0;
 
 void send_input(struct networking_options& networkingOptions, volatile int& exit_flag) {
@@ -78,7 +84,7 @@ void read_response(struct networking_options& networkingOptions, volatile int& e
         }
 
         // Sleep for a certain duration before rechecking for acknowledgments
-        std::chrono::milliseconds sleep_duration(100); // Adjust the duration as needed
+        std::chrono::milliseconds sleep_duration(100);
         std::this_thread::sleep_for(sleep_duration);
     }
 }

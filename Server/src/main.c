@@ -124,7 +124,7 @@ int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_
     ssize_t rbytes = recvfrom(sock_fd, buffer, MAX_LEN, 0, from_addr, from_addr_len);
     if(rbytes > 0)
     {
-        printf("handling data, rbytes: %zd\n", rbytes);
+//        printf("handling data, rbytes: %zd\n", rbytes);
         return 0;
     }
     return -1;

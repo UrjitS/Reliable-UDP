@@ -148,16 +148,16 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
 
     if(pkt->header->seq_num < *client_seq_num)
     {
-        printf("Received seq_num=%d, it is less than expected client_seq_num=%d, ignoring and returning ack\n"
-               , pkt->header->seq_num, opts->client_seq_num);
+//        printf("Received seq_num=%d, it is less than expected client_seq_num=%d, ignoring and returning ack\n"
+//               , pkt->header->seq_num, opts->client_seq_num);
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //IGNORE PACKET
     }
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
-        printf("Received seq_num=%d, it is within client_seq_num=%d + %d, stashing and returning ack\n"
-                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
+//        printf("Received seq_num=%d, it is within client_seq_num=%d + %d, stashing and returning ack\n"
+//                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
@@ -165,8 +165,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     }
     else
     {
-        printf("Received seq_num=%d, it is beyond client_seq_num=%d + %d, ignoring\n"
-                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
+//        printf("Received seq_num=%d, it is beyond client_seq_num=%d + %d, ignoring\n"
+//                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
     }
 
     free_pkt(pkt);
@@ -198,7 +198,7 @@ void check_window(uint32_t *client_seq_num, struct stash *window)
             deliver_data(window[i].data, window[i].seq_num);
             reset_stash(&window[i]);
             (*client_seq_num)++;
-            printf("expected seq_num: %d\n", *client_seq_num);
+//            printf("expected seq_num: %d\n", *client_seq_num);
         }
         else
         {
@@ -288,12 +288,12 @@ void free_pkt(struct packet *pkt)
     {
         if(pkt->header != NULL)
         {
-            printf("freeing header\n");
+//            printf("freeing header\n");
             free(pkt->header);
         }
         if(pkt->data != NULL)
         {
-            printf("freeing data\n");
+//            printf("freeing data\n");
             free(pkt->data);
         }
     }
@@ -308,7 +308,7 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
 
     generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
     sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
-    printf("Sent ack for packet %d\n", pkt_seq_num);
+//    printf("Sent ack for packet %d\n", pkt_seq_num);
     (*server_seq_num)++;
     free(ack);
 }

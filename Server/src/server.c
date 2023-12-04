@@ -218,9 +218,12 @@ void order_window(const uint32_t *client_seq_num, struct stash *window)
         if(window[i].cleared == 1)
         {
             uint32_t new_rel = window[i].seq_num - *client_seq_num;
-            window[new_rel].rel_num = new_rel;
-            copy_stash(&window[i], &window[new_rel]);
-            reset_stash(&window[i]);
+            if(new_rel != i)
+            {
+                window[new_rel].rel_num = new_rel;
+                copy_stash(&window[i], &window[new_rel]);
+                reset_stash(&window[i]);
+            }
         }
     }
 

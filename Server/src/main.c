@@ -106,13 +106,13 @@ int do_read(void *arg)
 
     if(exit_flag == true)
     {
-        for(size_t i = 0; i < WIN_SIZE; ++i)
-        {
-            if(opts->window[i].data != NULL)
-            {
-                free(opts->window[i].data);
-            }
-        }
+//        for(size_t i = 0; i < WIN_SIZE; ++i)
+//        {
+//            if(opts->window[i].data != NULL)
+//            {
+//                free(opts->window[i].data);
+//            }
+//        }
         return done;
     }
 

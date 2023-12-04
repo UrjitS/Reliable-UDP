@@ -130,6 +130,10 @@ int set_up(void *arg) {
     opts->client_seq_num = 0;
     opts->server_seq_num = 0;
     memset(opts->window, 0, WIN_SIZE);
+    for(size_t i = 0; i < WIN_SIZE; ++i)
+    {
+        reset_stash(&opts->window[i]);
+    }
     printf("Finished Set up\n");
     return ok;
 }
@@ -166,11 +170,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     }
 
     free_pkt(pkt);
+    print_window(window);
 
-//    for(size_t i = 0; i < WIN_SIZE; i++)
-//    {
-//        reset_stash(&window[i]);
-//    }
 }
 
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt)
@@ -196,7 +197,7 @@ void check_window(uint32_t *client_seq_num, struct stash *window)
     {
         if(window[i].seq_num == *client_seq_num)
         {
-            deliver_data(window[i].data);
+            deliver_data(window[i].data, window[i].seq_num);
             reset_stash(&window[i]);
             (*client_seq_num)++;
             printf("expected seq_num: %d\n", *client_seq_num);
@@ -224,6 +225,19 @@ void order_window(const uint32_t *client_seq_num, struct stash *window)
 
 }
 
+void print_window(struct stash *window)
+{
+    printf("-----------------------WINDOW INFO-----------------------\n");
+    for(size_t i = 0; i < WIN_SIZE; ++i)
+    {
+        printf("----SLOT %zu----\n", i);
+        printf("Cleared: %d\n", window[i].cleared);
+        printf("Rel_num: %d\n", window[i].rel_num);
+        printf("Seq_num: %d\n", window[i].seq_num);
+    }
+
+}
+
 void copy_stash(const struct stash *src, struct stash *dest)
 {
     dest->cleared = src->cleared;
@@ -231,9 +245,9 @@ void copy_stash(const struct stash *src, struct stash *dest)
     dest->data = strdup(src->data);
 }
 
-void deliver_data(char *data)
+void deliver_data(char *data, uint32_t seq_num)
 {
-    printf("Client: %s\n", data);
+    printf("Client %d: %s\n", seq_num, data);
 }
 
 void reset_stash(struct stash *stash)

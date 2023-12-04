@@ -72,11 +72,12 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
                 struct sockaddr *from_addr, const socklen_t *from_addr_len);
 void generate_ack(char *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len);
 void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet *pkt);
-void deliver_data(char *data);
+void deliver_data(char *data, uint32_t seq_num);
 void reset_stash(struct stash *stash);
 void order_window(const uint32_t *client_seq_num, struct stash *window);
 void check_window(uint32_t *client_seq_num, struct stash *window);
 void copy_stash(const struct stash *src, struct stash *dest);
 void print_packet(struct packet *pkt);
+void print_window(struct stash *window);
 
 #endif

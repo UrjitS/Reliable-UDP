@@ -184,11 +184,12 @@ void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet
     window[pkt_seq_num].rel_num = pkt_seq_num;
     window[pkt_seq_num].seq_num = pkt->header->seq_num;
     window[pkt_seq_num].data = strdup(pkt->data); //malloc
-
+    print_window(window);
     //check_window
     check_window(client_seq_num, window);
     //order_window
     order_window(client_seq_num, window);
+    print_window(window);
 }
 
 void check_window(uint32_t *client_seq_num, struct stash *window)

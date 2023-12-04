@@ -170,7 +170,6 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     }
 
     free_pkt(pkt);
-    print_window(window);
 
 }
 
@@ -184,12 +183,10 @@ void manage_window(uint32_t *client_seq_num, struct stash *window, struct packet
     window[pkt_seq_num].rel_num = pkt_seq_num;
     window[pkt_seq_num].seq_num = pkt->header->seq_num;
     window[pkt_seq_num].data = strdup(pkt->data); //malloc
-    print_window(window);
     //check_window
     check_window(client_seq_num, window);
     //order_window
     order_window(client_seq_num, window);
-    print_window(window);
 }
 
 void check_window(uint32_t *client_seq_num, struct stash *window)
@@ -311,7 +308,7 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
 
     generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
     sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
-    printf("Sent ack for %d\n", *server_seq_num);
+    printf("Sent ack for packet %d\n", pkt_seq_num);
     (*server_seq_num)++;
     free(ack);
 }

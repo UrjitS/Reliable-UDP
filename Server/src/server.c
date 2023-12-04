@@ -140,18 +140,20 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     struct packet *pkt = malloc(sizeof(struct packet));
     pkt->header = malloc(sizeof(struct packet_header));
     deserialize_packet(buffer, pkt);
-    print_packet(pkt);
+//    print_packet(pkt);
 
     if(pkt->header->seq_num < *client_seq_num)
     {
-        printf("Unexpected data arrived...\n");
+        printf("Received seq_num=%d, it is less than expected client_seq_num=%d, ignoring and returning ack\n"
+               , pkt->header->seq_num, opts->client_seq_num);
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //IGNORE PACKET
     }
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
-        printf("Expected data arrived...\n");
+        printf("Received seq_num=%d, it is within client_seq_num=%d + %d, stashing and returning ack\n"
+                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
@@ -159,7 +161,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     }
     else
     {
-        printf("Ignore...\n");
+        printf("Received seq_num=%d, it is beyond client_seq_num=%d + %d, ignoring\n"
+                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
     }
 
     free_pkt(pkt);
@@ -290,19 +293,15 @@ void return_ack(int sock_fd, uint32_t *server_seq_num, uint32_t pkt_seq_num,
 
     generate_ack(ack, *server_seq_num, pkt_seq_num, ACK, ACK_DATA_LEN);
     sendto(sock_fd, ack, ACK_SIZE, 0, from_addr, *from_addr_len);
+    printf("Sent ack for %d\n", *server_seq_num);
     (*server_seq_num)++;
     free(ack);
-    printf("done\n");
 }
 
 void generate_ack(char *ack, uint32_t server_seq_num, uint32_t pkt_seq_num, uint8_t flags, uint16_t data_len)
 {
     size_t count;
 
-    printf("---------ACK--------\n");
-    printf("server_seq_num: %d\n",server_seq_num);
-    printf("pkt_seq_num: %d\n",pkt_seq_num);
-    printf("data_len: %d\n",data_len);
     server_seq_num = htonl(server_seq_num);
     pkt_seq_num = htonl(pkt_seq_num);
     data_len = htons(data_len);

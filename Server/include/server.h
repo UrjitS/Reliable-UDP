@@ -41,7 +41,7 @@ struct server_opts
     int argc;
     int ip_family;
     int sock_fd;
-    int graph_fd;
+    FILE *graph_fd;
     FILE *stat_fd;
     in_port_t host_port;
     uint32_t client_seq_num;

@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 
 void write_to_graph(FILE *graph, uint32_t ack_num);
 void write_to_stat(FILE *stat, uint32_t server_seq_num, uint32_t client_seq_num);

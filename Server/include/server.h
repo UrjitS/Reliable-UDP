@@ -17,6 +17,7 @@
 #include <sys/types.h>
 
 #include "fsm.h"
+#include "helpers.h"
 
 #define SERVER_ARGS 3
 #define IP_INDEX 1
@@ -40,9 +41,12 @@ struct server_opts
     int argc;
     int ip_family;
     int sock_fd;
+    int graph_fd;
+    FILE *stat_fd;
     in_port_t host_port;
     uint32_t client_seq_num;
     uint32_t server_seq_num;
+//    char *graph_path;
     char *msg;
     char *host_ip;
     char **argv;

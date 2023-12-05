@@ -134,6 +134,8 @@ int set_up(void *arg) {
     {
         reset_stash(&opts->window[i]);
     }
+    opts->graph_fd = open("graph.txt", O_WRONLY | O_TRUNC | O_APPEND);
+    opts->stat_fd = fopen("stat.txt", "w");
     printf("Finished Set up\n");
     return ok;
 }
@@ -153,6 +155,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //IGNORE PACKET
+        write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
+        write_to_graph(opts->graph_fd, pkt->header->seq_num);
     }
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
@@ -162,6 +166,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
         manage_window(client_seq_num, window, pkt);
+        write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
+        write_to_graph(opts->graph_fd, pkt->header->seq_num);
     }
     else
     {

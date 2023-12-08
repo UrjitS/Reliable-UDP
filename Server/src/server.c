@@ -146,7 +146,6 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     struct packet *pkt = malloc(sizeof(struct packet));
     pkt->header = malloc(sizeof(struct packet_header));
     deserialize_packet(buffer, pkt);
-//    print_packet(pkt);
 
     if(pkt->header->seq_num < *client_seq_num)
     {
@@ -157,11 +156,14 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         {
             write_to_graph(opts->graph_fd, pkt->header->seq_num);
         }
-//        write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
     }
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
         //RETURN ACK
+        if(pkt->header->seq_num == 0)
+        {
+            printf("%s\n", pkt->data);
+        }
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
         manage_window(client_seq_num, window, pkt);
@@ -169,12 +171,6 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         {
             write_to_graph(opts->graph_fd, pkt->header->seq_num);
         }
-//        write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
-    }
-    else
-    {
-//        printf("Received seq_num=%d, it is beyond client_seq_num=%d + %d, ignoring\n"
-//                , pkt->header->seq_num, opts->client_seq_num, WIN_SIZE);
     }
 
     free_pkt(pkt);

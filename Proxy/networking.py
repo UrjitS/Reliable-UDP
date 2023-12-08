@@ -70,7 +70,7 @@ def forward_receiver(socket_fd, data, address):
         print("Dropped packet")
         options.STATUS = "Dropped Sender Packet"
         with open('statistics.txt', 'a', encoding="utf-8") as f:
-            f.write(f"Receiver packet dropped at\n")
+            f.write(f"Receiver packet dropped\n")
         return
 
     # Randomly delay packet
@@ -93,7 +93,7 @@ def forward_sender(socket_fd, data, address):
         print("Dropped packet")
         options.STATUS = "Dropped Receiver Packet"
         with open('statistics.txt', 'a', encoding="utf-8") as f:
-            f.write(f"Sender packet dropped at\n")
+            f.write(f"Sender packet dropped\n")
         return
 
     # Randomly delay packet

@@ -65,19 +65,22 @@ def forward_receiver(socket_fd, data, address):
     """
     print("Forwarding receiver")
 
+    # Increment receiver sequence number
+    options.RECEIVER_SEQ_NUM += 1
+
     # Randomly drop packet
     if random_drop(options.RECEIVER_DROP_CHANCE):
         print("Dropped packet")
         options.STATUS = "Dropped Sender Packet"
         with open('statistics.txt', 'a', encoding="utf-8") as f:
-            f.write(f"Receiver packet dropped\n")
+            f.write(f"Receiver packet dropped, Seq Num: {options.RECEIVER_SEQ_NUM}\n")
         return
 
     # Randomly delay packet
     delay = random_delay(options.DELAY_ACK_UPPER_BOUND)
     options.STATUS = f"Delaying Receiver packet by {delay}ms"
     with open('statistics.txt', 'a', encoding="utf-8") as f:
-        f.write(f"Receiver packet delayed by {delay}ms\n")
+        f.write(f"Receiver packet delayed by {delay}ms, Seq Num: {options.RECEIVER_SEQ_NUM}\n")
 
     threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
 
@@ -88,12 +91,15 @@ def forward_sender(socket_fd, data, address):
     """
     print("Forwarding sender")
 
+    # Increment sender sequence number
+    options.SENDER_SEQ_NUM += 1
+
     # Randomly drop packet
     if random_drop(options.SENDER_DROP_CHANCE):
         print("Dropped packet")
         options.STATUS = "Dropped Receiver Packet"
         with open('statistics.txt', 'a', encoding="utf-8") as f:
-            f.write(f"Sender packet dropped\n")
+            f.write(f"Sender packet dropped, Seq Num: {options.SENDER_SEQ_NUM}\n")
         return
 
     # Randomly delay packet
@@ -101,7 +107,7 @@ def forward_sender(socket_fd, data, address):
     print(f"Delaying packet by {delay}ms")
     options.STATUS = f"Delaying Sender packet by {delay}ms"
     with open('statistics.txt', 'a', encoding="utf-8") as f:
-        f.write(f"Sender packet delayed by {delay}ms\n")
+        f.write(f"Sender packet delayed by {delay}ms, Seq Num: {options.SENDER_SEQ_NUM}\n")
 
     threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
 

@@ -13,7 +13,9 @@
 /Proxy/cmake-build-debug/
 /Proxy/build/
 /Proxy/env
+/Proxy/main
 /Proxy/__pycache__/
+/Proxy/statistics.txt
 
 /Graph/output.txt
 /Graph/build/

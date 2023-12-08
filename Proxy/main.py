@@ -77,6 +77,9 @@ def main ():
             UI().window.mainloop()
             os.waitpid(pid, 0)  # Wait for the child process to finish.
             forward_thread.join()
+    else:
+        UI().window.mainloop()
+        forward_thread.join()
 
 
 

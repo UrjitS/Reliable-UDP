@@ -88,7 +88,7 @@ def update_proxy(num):
     plt.subplot(2, 1, 1)
     plt.plot(sender_seq_nums, sender_delays, label='Delays')
     plt.scatter(sender_dropped, [0]*len(sender_dropped), color='red', label='Dropped')
-    plt.title(f'Client Packets (Dropped: {sender_dropped.count(True)})')
+    plt.title(f'Client Packets')
     plt.xlabel('Sequence Number')
     plt.ylabel('Delay (ms)')
     plt.legend(loc='upper right')
@@ -97,7 +97,7 @@ def update_proxy(num):
     plt.subplot(2, 1, 2)
     plt.plot(receiver_seq_nums, receiver_delays, label='Delays')
     plt.scatter(receiver_dropped, [0]*len(receiver_dropped), color='red', label='Dropped')
-    plt.title(f'Receiver Packets (Dropped: {receiver_dropped.count(True)})')
+    plt.title(f'Receiver Packets')
     plt.xlabel('Sequence Number')
     plt.ylabel('Delay (ms)')
     plt.legend(loc='upper right')
@@ -108,7 +108,30 @@ def update_server(num):
     """
     Update the plot with data from the file.
     """
-    return
+    global last_mod_time
+    
+    current_mod_time = os.path.getmtime(FILE_NAME)
+    if last_mod_time == current_mod_time:
+        return
+    last_mod_time = current_mod_time
+
+    packet_sequence_numbers = []
+    timestamps = []
+
+    with open(FILE_NAME, 'r', encoding="utf-8") as f:
+        for line in f:
+            try:
+                packet_sequence_number, timestamp = map(int, line.split(','))
+                packet_sequence_numbers.append(packet_sequence_number)
+                timestamps.append(timestamp)
+            except ValueError:
+                print(f"Invalid data in file: {line}. Skipping this line.")
+
+    plt.cla()
+    plt.scatter(packet_sequence_numbers, timestamps)
+    plt.title('Time vs. ACK Packet Sequence Number')
+    plt.xlabel('ACK Packet Sequence Number')
+    plt.ylabel('Time (s)')
 
 def main():
     """

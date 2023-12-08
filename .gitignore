@@ -14,6 +14,8 @@
 /Proxy/__pycache__/
 
 /Graph/output.txt
+/Graph/build/
+/Graph/dist/
 
 /.idea/
 /.vscode/

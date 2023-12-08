@@ -6,6 +6,7 @@
 #include "transfer.hpp"
 #include <csignal>
 #include <thread>
+#include <cstring>
 
 using namespace std;
 
@@ -127,7 +128,7 @@ bool setup_connection(struct networking_options& networkingOptions) {
 void parse_arguments(int argc, char * argv[], struct networking_options& networkingOptions) {
     opterr = 0;
 
-    if(argc != 3)
+    if((argc < 3) || (argc > 4))
     {
         networkingOptions.message = "Please give Receiver IP address, and port.";
         print_program_usage(networkingOptions);
@@ -153,8 +154,23 @@ void parse_arguments(int argc, char * argv[], struct networking_options& network
 
     check_ip_address(networkingOptions);
 
+    if (argc == 4) {
+        if (strcmp(argv[optind+2], "-g") == 0) {
+            // Fork and exec the graphing program
+            pid_t pid = fork();
+            if (pid == 0) {
+                int ret = execlp("./main", "./main", "-c", "./output.txt", nullptr);
+                if (ret == -1) {
+                    perror("Failed to exec");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            cout << "Graphing Program Started" << endl;
+        }
+    }
     cout << "Sending to Ip Address: " << networkingOptions.receiver_ip_address << endl;
     cout << "Sending to Port: " << networkingOptions.receiver_port << endl;
+
 }
 
 static void check_ip_address(struct networking_options& networkingOptions) {

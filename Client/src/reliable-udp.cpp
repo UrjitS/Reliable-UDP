@@ -195,9 +195,8 @@ void remove_packet_from_sent_packets(struct networking_options& networkingOption
     for (auto it = sent_packets.begin(); it != sent_packets.end(); ++it) {
         if (it->sequence_number == ack_number) {
             // Calculate the time taken
-            it->time_ack = time(nullptr);
-//            time_t time_taken = it->time_ack - networkingOptions.time_started;
-            time_t time_taken = (it->time_ack - it->time_sent);
+            time_t time_taken = time(nullptr) - networkingOptions.time_started;
+//            time_t time_taken = (it->time_ack - it->time_sent);
             write_data_to_file(networkingOptions.stats_file, it->sequence_number, time_taken);
 
             // Remove the packet from the list of sent packets

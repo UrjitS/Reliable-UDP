@@ -69,11 +69,15 @@ def forward_receiver(socket_fd, data, address):
     if random_drop(options.RECEIVER_DROP_CHANCE):
         print("Dropped packet")
         options.STATUS = "Dropped Sender Packet"
+        with open('statistics.txt', 'a', encoding="utf-8") as f:
+            f.write(f"Receiver packet dropped at\n")
         return
 
     # Randomly delay packet
     delay = random_delay(options.DELAY_ACK_UPPER_BOUND)
     options.STATUS = f"Delaying Receiver packet by {delay}ms"
+    with open('statistics.txt', 'a', encoding="utf-8") as f:
+        f.write(f"Receiver packet delayed by {delay}ms\n")
 
     threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
 
@@ -88,16 +92,18 @@ def forward_sender(socket_fd, data, address):
     if random_drop(options.SENDER_DROP_CHANCE):
         print("Dropped packet")
         options.STATUS = "Dropped Receiver Packet"
+        with open('statistics.txt', 'a', encoding="utf-8") as f:
+            f.write(f"Sender packet dropped at\n")
         return
 
     # Randomly delay packet
     delay = random_delay(options.DELAY_DATA_UPPER_BOUND)
     print(f"Delaying packet by {delay}ms")
     options.STATUS = f"Delaying Sender packet by {delay}ms"
-
+    with open('statistics.txt', 'a', encoding="utf-8") as f:
+        f.write(f"Sender packet delayed by {delay}ms\n")
 
     threading.Thread(target=delayed_send, args=(socket_fd, data, address, delay)).start()
-
 
 def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
     """
@@ -110,6 +116,9 @@ def forward_data(receiver_ip: str, receiver_port: int, bind_port: int):
 
     socket_fd = create_udp(bind_port)
     socket_fd.setblocking(False)
+
+    with open('statistics.txt', 'w') as f:
+        pass
 
     while options.RUNNING:
         try:

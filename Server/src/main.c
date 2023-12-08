@@ -94,10 +94,6 @@ int do_read(void *arg)
     {
         handle_data_in(opts, buffer, &opts->client_seq_num, &opts->server_seq_num, opts->window, &from_addr, &from_addr_len);
     }
-//    if(ret == -1)
-//    {
-//        opts->msg = strdup("recvfrom error\n");
-//    }
 
     if(opts->msg)
     {
@@ -106,13 +102,6 @@ int do_read(void *arg)
 
     if(exit_flag == true)
     {
-//        for(size_t i = 0; i < WIN_SIZE; ++i)
-//        {
-//            if(opts->window[i].data != NULL)
-//            {
-//                free(opts->window[i].data);
-//            }
-//        }
         return done;
     }
 

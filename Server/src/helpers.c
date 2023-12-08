@@ -4,9 +4,10 @@
 
 #include "helpers.h"
 
-void write_to_graph(FILE *graph, uint32_t ack_num)
+void write_to_graph(FILE *graph, uint32_t ack_num, time_t start_time)
 {
-    fprintf(graph, "%d\n", ack_num);
+    time_t now = time(0);
+    fprintf(graph, "%d, %ld\n", ack_num, now);
 }
 void write_to_stat(FILE *stat, uint32_t server_seq_num, uint32_t client_seq_num)
 {

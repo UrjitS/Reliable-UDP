@@ -46,7 +46,7 @@ struct server_opts
     in_port_t host_port;
     uint32_t client_seq_num;
     uint32_t server_seq_num;
-//    char *graph_path;
+    time_t start_time;
     char *msg;
     char *host_ip;
     char **argv;
@@ -67,6 +67,9 @@ struct packet {
 
 int get_ip_family(const char *ip_addr);
 int parse_in_port_t(struct server_opts *opts);
+void init_window(struct server_opts *opts);
+void init_graphing(struct server_opts *opts);
+int set_socket_non_block(struct server_opts *opts);
 int fill_buffer(int sock_fd, char *buffer,  struct sockaddr *from_addr, socklen_t *from_addr_len);
 void deserialize_packet(char *header, struct packet *pkt);
 void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq_num, uint32_t *server_seq_num

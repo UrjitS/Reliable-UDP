@@ -115,30 +115,50 @@ int set_up(void *arg) {
         return error;
     }
 
-//    printf("Server socket timeout: %ld\n", timeout.tv_sec);
-    int flags = fcntl(opts->sock_fd, F_GETFL, 0);
-    if (flags == -1) {
-        opts->msg = strdup("F_GETFL failed\n");
+    ret = set_socket_non_block(opts);
+    if(ret == -1)
+    {
         return error;
     }
 
-    if (fcntl(opts->sock_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-        opts->msg = strdup("F_SETFL failed\n");
-        return error;
-    }
     printf("---------------------------- Server Options ----------------------------\n");
+    init_window(opts);
+    init_graphing(opts);
+    printf("Finished Set up\n");
+    return ok;
+}
+
+void init_window(struct server_opts *opts)
+{
     opts->client_seq_num = 0;
     opts->server_seq_num = 0;
-    memset(opts->window, 0, WIN_SIZE);
     for(size_t i = 0; i < WIN_SIZE; ++i)
     {
         reset_stash(&opts->window[i]);
     }
     opts->window[0].seq_num = UINT32_MAX;
+}
+
+void init_graphing(struct server_opts *opts)
+{
     opts->graph_fd = fopen("./graph.txt", "w");
     opts->stat_fd = fopen("./stat.txt", "w");
-    printf("Finished Set up\n");
-    return ok;
+    opts->start_time = time(0);
+}
+
+int set_socket_non_block(struct server_opts *opts)
+{
+    int flags = fcntl(opts->sock_fd, F_GETFL, 0);
+    if (flags == -1) {
+        opts->msg = strdup("F_GETFL failed\n");
+        return -1;
+    }
+
+    if (fcntl(opts->sock_fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        opts->msg = strdup("F_SETFL failed\n");
+        return -1;
+    }
+    return 0;
 }
 
 void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq_num, uint32_t *server_seq_num
@@ -153,10 +173,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         //RETURN ACK
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //IGNORE PACKET
-        if(pkt->data != NULL)
-        {
-            write_to_graph(opts->graph_fd, pkt->header->seq_num);
-        }
+        write_to_graph(opts->graph_fd, pkt->header->seq_num, opts->start_time);
+
     }
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
@@ -164,10 +182,8 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
         manage_window(client_seq_num, window, pkt);
-        if(pkt->data != NULL)
-        {
-            write_to_graph(opts->graph_fd, pkt->header->seq_num);
-        }
+        write_to_graph(opts->graph_fd, pkt->header->seq_num, opts->start_time);
+
     }
 
     free_pkt(pkt);

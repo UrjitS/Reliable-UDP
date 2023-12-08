@@ -149,11 +149,16 @@ def main():
     
     try:
         if args.s:
-            print("Server")
             FILE_NAME = args.s
+            print(f"Server: {FILE_NAME}")
             last_mod_time = os.path.getmtime(FILE_NAME)
-            plt.title('Server Time vs. Packet Sequence Number')
             plt.figure(num="Server Statistics")
+            try:
+                anim = FuncAnimation(plt.gcf(), update_server, interval=1000, cache_frame_data=False)  # Update every 1000ms.
+                plt.show()
+            except KeyboardInterrupt:
+                print("Interrupted by user. Exiting...")
+                return
         elif args.c:
             FILE_NAME = args.c
             print(f"Client File: {FILE_NAME}")

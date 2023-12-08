@@ -162,7 +162,7 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
         //RETURN ACK
         if(pkt->header->seq_num == 0)
         {
-            printf("%s\n", pkt->data);
+            printf("extra---------: %s\n", pkt->data);
         }
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC

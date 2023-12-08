@@ -10,7 +10,6 @@ import os
 
 FILE_NAME = ''
 last_mod_time = None
-
 def update_client(num):
     """
     Update the plot with data from the file.
@@ -27,9 +26,12 @@ def update_client(num):
 
     with open(FILE_NAME, 'r', encoding="utf-8") as f:
         for line in f:
-            packet_sequence_number, timestamp = map(int, line.split(','))
-            packet_sequence_numbers.append(packet_sequence_number)
-            timestamps.append(timestamp)
+            try:
+                packet_sequence_number, timestamp = map(int, line.split(','))
+                packet_sequence_numbers.append(packet_sequence_number)
+                timestamps.append(timestamp)
+            except ValueError:
+                print(f"Invalid data in file: {line}. Skipping this line.")
 
     plt.cla()  # Clear the current axes.
     plt.scatter(packet_sequence_numbers, timestamps)
@@ -58,24 +60,27 @@ def update_proxy(num):
 
     with open(FILE_NAME, 'r', encoding="utf-8") as f:
         for line in f:
-            if "Sender packet dropped" in line:
-                seq_num = int(re.findall(r'\d+', line)[0])
-                sender_seq_nums.append(seq_num)
-                sender_delays.append(0)
-                sender_dropped.append(seq_num)
-            elif "Sender packet delayed" in line:
-                delay, seq_num = map(int, re.findall(r'\d+', line))
-                sender_seq_nums.append(seq_num)
-                sender_delays.append(delay)
-            elif "Receiver packet dropped" in line:
-                seq_num = int(re.findall(r'\d+', line)[0])
-                receiver_seq_nums.append(seq_num)
-                receiver_delays.append(0)
-                receiver_dropped.append(seq_num)
-            elif "Receiver packet delayed" in line:
-                delay, seq_num = map(int, re.findall(r'\d+', line))
-                receiver_seq_nums.append(seq_num)
-                receiver_delays.append(delay)
+            try:
+                if "Sender packet dropped" in line:
+                    seq_num = int(re.findall(r'\d+', line)[0])
+                    sender_seq_nums.append(seq_num)
+                    sender_delays.append(0)
+                    sender_dropped.append(seq_num)
+                elif "Sender packet delayed" in line:
+                    delay, seq_num = map(int, re.findall(r'\d+', line))
+                    sender_seq_nums.append(seq_num)
+                    sender_delays.append(delay)
+                elif "Receiver packet dropped" in line:
+                    seq_num = int(re.findall(r'\d+', line)[0])
+                    receiver_seq_nums.append(seq_num)
+                    receiver_delays.append(0)
+                    receiver_dropped.append(seq_num)
+                elif "Receiver packet delayed" in line:
+                    delay, seq_num = map(int, re.findall(r'\d+', line))
+                    receiver_seq_nums.append(seq_num)
+                    receiver_delays.append(delay)
+            except ValueError:
+                print(f"Invalid data in file: {line}. Skipping this line.")
 
     plt.clf()
     
@@ -99,6 +104,12 @@ def update_proxy(num):
 
     plt.subplots_adjust(hspace=0.5, right=0.85)
 
+def update_server(num):
+    """
+    Update the plot with data from the file.
+    """
+    return
+
 def main():
     """
     Main function for the graphing program
@@ -112,37 +123,40 @@ def main():
     parser.add_argument('-p',    type=str, required=False, help='Proxy Flag')
     args = parser.parse_args()
     
-    if args.s:
-        print("Server")
-        FILE_NAME = args.s
-        last_mod_time = os.path.getmtime(FILE_NAME)
-        plt.title('Server Time vs. Packet Sequence Number')
-        plt.figure(num="Server Statistics")
-    elif args.c:
-        FILE_NAME = args.c
-        print(f"Client File: {FILE_NAME}")
-        last_mod_time = os.path.getmtime(FILE_NAME)
-        plt.figure(num="Client Statistics")
-        try:
-            anim = FuncAnimation(plt.gcf(), update_client, interval=1000, cache_frame_data=False)  # Update every 1000ms.
-            plt.show()
-        except KeyboardInterrupt:
-            print("Interrupted by user. Exiting...")
+    try:
+        if args.s:
+            print("Server")
+            FILE_NAME = args.s
+            last_mod_time = os.path.getmtime(FILE_NAME)
+            plt.title('Server Time vs. Packet Sequence Number')
+            plt.figure(num="Server Statistics")
+        elif args.c:
+            FILE_NAME = args.c
+            print(f"Client File: {FILE_NAME}")
+            last_mod_time = os.path.getmtime(FILE_NAME)
+            plt.figure(num="Client Statistics")
+            try:
+                anim = FuncAnimation(plt.gcf(), update_client, interval=1000, cache_frame_data=False)  # Update every 1000ms.
+                plt.show()
+            except KeyboardInterrupt:
+                print("Interrupted by user. Exiting...")
+                return
+        elif args.p:
+            FILE_NAME = args.p
+            last_mod_time = os.path.getmtime(FILE_NAME)
+            plt.figure(num="Proxy Statistics")
+            try:
+                anim = FuncAnimation(plt.gcf(), update_proxy, interval=1000, cache_frame_data=False)  # Update every 1000ms.
+                plt.show()
+            except KeyboardInterrupt:
+                print("Interrupted by user. Exiting...")
+                return
+            
+        else:
+            print("Invalid arguments.")
             return
-    elif args.p:
-        FILE_NAME = args.p
-        last_mod_time = os.path.getmtime(FILE_NAME)
-        plt.figure(num="Proxy Statistics")
-        try:
-            anim = FuncAnimation(plt.gcf(), update_proxy, interval=1000, cache_frame_data=False)  # Update every 1000ms.
-            plt.show()
-        except KeyboardInterrupt:
-            print("Interrupted by user. Exiting...")
-            return
-        
-    else:
-        print("Invalid arguments.")
-        return
+    except FileNotFoundError:
+        print(f"File {FILE_NAME} not found. Please check the file path and try again.")
 
 if __name__ == '__main__':
     main()

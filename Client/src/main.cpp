@@ -184,8 +184,8 @@ static void check_ip_address(struct networking_options& networkingOptions) {
     } else if (inet_pton(AF_INET6, networkingOptions.receiver_ip_address.c_str(), &receiver_struct) == 1) {
         networkingOptions.ip_family = AF_INET6;
         networkingOptions.ipv6_addr = *reinterpret_cast<struct sockaddr_in6*>(&receiver_struct);
+        inet_pton(AF_INET6, networkingOptions.receiver_ip_address.c_str(), &(networkingOptions.ipv6_addr.sin6_addr));
         networkingOptions.ipv6_addr.sin6_family = AF_INET6;
-//        networkingOptions.ipv6_addr.sin6_addr = inet_addr(networkingOptions.receiver_ip_address.c_str());
         networkingOptions.ipv6_addr.sin6_port = htons(networkingOptions.receiver_port);
     }
 }

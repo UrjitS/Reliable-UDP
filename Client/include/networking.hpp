@@ -37,8 +37,6 @@ struct header_field {
     uint16_t data_length;
     std::string data;
     uint64_t sent_counter;
-    time_t time_ack;
-    time_t time_sent;
 };
 
 /**

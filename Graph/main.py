@@ -112,7 +112,7 @@ def update_server(num):
     
     current_mod_time = os.path.getmtime(FILE_NAME)
     if last_mod_time == current_mod_time:
-        return  # File hasn't been modified, so don't update the graph.
+        return
     last_mod_time = current_mod_time
 
     packet_sequence_numbers = []
@@ -127,10 +127,10 @@ def update_server(num):
             except ValueError:
                 print(f"Invalid data in file: {line}. Skipping this line.")
 
-    plt.cla()  # Clear the current axes.
+    plt.cla()
     plt.scatter(packet_sequence_numbers, timestamps)
-    plt.title('Time vs. Packet Sequence Number')
-    plt.xlabel('Packet Sequence Number')
+    plt.title('Time vs. ACK Packet Sequence Number')
+    plt.xlabel('ACK Packet Sequence Number')
     plt.ylabel('Time (s)')
 
 def main():

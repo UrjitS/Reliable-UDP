@@ -34,24 +34,7 @@ int parse_args(void *arg)
 
     if(opts->argc == GRAPH_ARGS)
     {
-        if(strcmp(opts->argv[GRAPH_INDEX], "-g") == 0)
-        {
-            pid_t pid = fork();
-            if(pid == 0)
-            {
-                int ret = execlp("./main", "./main", "-s", "./graph.txt", NULL);
-                if(ret == -1)
-                {
-                    perror("exec failed\n");
-                    exit(EXIT_SUCCESS);
-                }
-            }
-            else
-            {
-                opts->graph_pid = pid;
-            }
-        }
-        else
+        if(strcmp(opts->argv[GRAPH_INDEX], "-g") != 0)
         {
             opts->msg = strdup("pass \"-g\" to start the graphing program\n");
             return error;
@@ -150,6 +133,28 @@ int set_up(void *arg) {
     printf("---------------------------- Server Options ----------------------------\n");
     init_window(opts);
     init_graphing(opts);
+    if(opts->argc == GRAPH_ARGS)
+    {
+        pid_t pid = fork();
+        if(pid == 0)
+        {
+            ret = execlp("python3", "python3", "./main.py", "-s", "./graph.txt", NULL);
+            if(ret == -1)
+            {
+                perror("exec failed\n");
+                exit(EXIT_SUCCESS);
+            }
+        }
+        else
+        {
+            opts->graph_pid = pid;
+        }
+        opts->running = 2;
+    }
+    else
+    {
+        opts->running = 1;
+    }
     printf("Finished Set up\n");
     return ok;
 }
@@ -390,20 +395,26 @@ int print_error(void *arg)
 int clean_up(void *arg)
 {
     struct server_opts *opts = (struct server_opts *) arg;
-    write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
     if(opts->msg)
     {
         free(opts->msg);
     }
 
-    if(opts->host_ip)
+    if(opts->running != 0)
     {
-        free(opts->host_ip);
-    }
+        close(opts->sock_fd);
 
-    close(opts->sock_fd);
-    fclose(opts->graph_fd);
-    fclose(opts->stat_fd);
+        if(opts->host_ip)
+        {
+            free(opts->host_ip);
+        }
+        if(opts->running != 1)
+        {
+            write_to_stat(opts->stat_fd, opts->server_seq_num, opts->client_seq_num);
+            fclose(opts->graph_fd);
+            fclose(opts->stat_fd);
+        }
+    }
 
     if(opts->graph_pid != 0)
     {

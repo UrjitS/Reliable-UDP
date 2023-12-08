@@ -40,6 +40,7 @@ struct stash {
 
 struct server_opts
 {
+    int running; //1 is running w/o graph, 2 is running w graph
     int argc;
     int ip_family;
     int sock_fd;

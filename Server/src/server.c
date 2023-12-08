@@ -13,7 +13,7 @@ int parse_args(void *arg)
 {
     struct server_opts *opts = (struct server_opts *) arg;
 
-    if(opts->argc != SERVER_ARGS)
+    if(opts->argc != SERVER_ARGS && opts->argc != GRAPH_ARGS)
     {
         opts->msg = strdup("Invalid number of arguments\n");
         return error;
@@ -30,6 +30,32 @@ int parse_args(void *arg)
     if(parse_in_port_t(opts) == -1)
     {
         return error;
+    }
+
+    if(opts->argc == GRAPH_ARGS)
+    {
+        if(strcmp(opts->argv[GRAPH_INDEX], "-g") == 0)
+        {
+            pid_t pid = fork();
+            if(pid == 0)
+            {
+                int ret = execlp("./main", "./main", "-s", "./graph.txt", NULL);
+                if(ret == -1)
+                {
+                    perror("exec failed\n");
+                    exit(EXIT_SUCCESS);
+                }
+            }
+            else
+            {
+                opts->graph_pid = pid;
+            }
+        }
+        else
+        {
+            opts->msg = strdup("pass \"-g\" to start the graphing program\n");
+            return error;
+        }
     }
 
     printf("---------------------------- Server Options ----------------------------\n");
@@ -378,6 +404,11 @@ int clean_up(void *arg)
     close(opts->sock_fd);
     fclose(opts->graph_fd);
     fclose(opts->stat_fd);
+
+    if(opts->graph_pid != 0)
+    {
+        waitpid(opts->graph_pid, NULL, 0);
+    }
 
     printf("Finished clean up\n");
     return ok;

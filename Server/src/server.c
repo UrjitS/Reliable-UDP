@@ -161,10 +161,6 @@ void handle_data_in(struct server_opts *opts, char *buffer, uint32_t *client_seq
     else if(pkt->header->seq_num >= *client_seq_num && pkt->header->seq_num < *client_seq_num+WIN_SIZE)
     {
         //RETURN ACK
-        if(pkt->header->seq_num == 0)
-        {
-            printf("extra---------: %s\n", pkt->data);
-        }
         return_ack(opts->sock_fd, server_seq_num, pkt->header->seq_num, from_addr, from_addr_len);
         //STASH AND DELIVER LOGIC
         manage_window(client_seq_num, window, pkt);

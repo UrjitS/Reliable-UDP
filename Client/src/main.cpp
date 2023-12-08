@@ -7,6 +7,7 @@
 #include <csignal>
 #include <thread>
 #include <cstring>
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -166,6 +167,7 @@ void parse_arguments(int argc, char * argv[], struct networking_options& network
                 }
             }
             cout << "Graphing Program Started" << endl;
+            networkingOptions.parent_pid = pid;
         }
     }
     cout << "Sending to Ip Address: " << networkingOptions.receiver_ip_address << endl;
@@ -215,6 +217,10 @@ void clean_resources(struct networking_options& networkingOptions) {
 
     if (networkingOptions.stats_file != nullptr) {
         fclose(networkingOptions.stats_file);
+    }
+
+    if (networkingOptions.parent_pid > 0) {
+        waitpid(networkingOptions.parent_pid, nullptr, 0);
     }
 
     exit(EXIT_SUCCESS);

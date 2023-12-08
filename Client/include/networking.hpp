@@ -25,6 +25,7 @@ struct networking_options {
     bool terminal_input;
     time_t time_started;
     size_t current_window_size;
+    pid_t parent_pid;
     FILE * stats_file;
 };
 

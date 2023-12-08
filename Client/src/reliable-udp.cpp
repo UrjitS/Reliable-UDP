@@ -264,6 +264,6 @@ uint32_t receive_acknowledgements(struct networking_options& networkingOptions, 
     modifying_global_variables.unlock();
 
     // Return the acknowledgement number except for the first packet
-    networkingOptions.current_window_size = sent_packets.size();
+    networkingOptions.current_window_size = window_size;
     return ack_number == 0 ? 1 : ack_number;
 }

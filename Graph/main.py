@@ -35,10 +35,10 @@ def update_client(num):
                 print(f"Invalid data in file: {line}. Skipping this line.")
 
     plt.cla()  # Clear the current axes.
-    plt.scatter(packet_sequence_numbers, timestamps)
-    plt.title('Time vs. Packet Sequence Number')
-    plt.xlabel('Packet Sequence Number')
-    plt.ylabel('Time (s)')
+    plt.scatter(x=timestamps, y=packet_sequence_numbers)
+    plt.title('Packet Sequence Number vs Time (s)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Packet Sequence Number')
 
 
 def update_proxy(num):
@@ -129,10 +129,10 @@ def update_server(num):
                 print(f"Invalid data in file: {line}. Skipping this line.")
 
     plt.cla()
-    plt.scatter(packet_sequence_numbers, timestamps)
-    plt.title('Time vs. ACK Packet Sequence Number')
-    plt.xlabel('ACK Packet Sequence Number')
-    plt.ylabel('Time (s)')
+    plt.scatter(x=timestamps, y=packet_sequence_numbers)
+    plt.title('ACK Packet Sequence Number vs. Time (s)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('ACK Packet Sequence Number')
 
 def main():
     """

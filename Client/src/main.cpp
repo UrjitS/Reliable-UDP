@@ -160,7 +160,7 @@ void parse_arguments(int argc, char * argv[], struct networking_options& network
             // Fork and exec the graphing program
             pid_t pid = fork();
             if (pid == 0) {
-                int ret = execlp("./main", "./main", "-c", "./output.txt", nullptr);
+                int ret = execlp("python3", "python3", "main.py", "-c", "./output.txt", nullptr);
                 if (ret == -1) {
                     perror("Failed to exec");
                     exit(EXIT_FAILURE);

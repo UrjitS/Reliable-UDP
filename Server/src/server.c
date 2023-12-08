@@ -138,15 +138,21 @@ int set_up(void *arg) {
         pid_t pid = fork();
         if(pid == 0)
         {
-            ret = execlp("python3", "python3", "./main.py", "-s", "./graph.txt", NULL);
+            ret = execlp("python3", "python3", "main.py", "-s", "./graph.txt", NULL);
             if(ret == -1)
             {
                 perror("exec failed\n");
                 exit(EXIT_SUCCESS);
             }
         }
+        else if(pid == -1)
+        {
+            opts->msg = strdup("fork failed\n");
+            return error;
+        }
         else
         {
+            printf("Started graph program\n");
             opts->graph_pid = pid;
         }
         opts->running = 2;

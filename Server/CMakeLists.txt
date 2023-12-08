@@ -17,9 +17,11 @@ set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCE_LIST ${SOURCE_DIR}/main.c
         ${SOURCE_DIR}/server.c
+        ${SOURCE_DIR}/helpers.c
 )
 set(HEADER_LIST ${INCLUDE_DIR}/server.h
         ${INCLUDE_DIR}/fsm.h
+        ${INCLUDE_DIR}/helpers.h
 )
 include_directories(${INCLUDE_DIR})
 

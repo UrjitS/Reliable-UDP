@@ -1,6 +1,8 @@
 # Project exclude paths
 /Server/cmake-build-debug/
 /Server/build/
+/Server/stat.txt
+/Server/graph.txt
 
 /Client/cmake-build-debug/
 /Client/book.txt

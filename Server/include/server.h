@@ -20,8 +20,10 @@
 #include "helpers.h"
 
 #define SERVER_ARGS 3
+#define GRAPH_ARGS 4
 #define IP_INDEX 1
 #define PORT_INDEX 2
+#define GRAPH_INDEX 3
 #define MAX_LEN 1024
 #define WIN_SIZE 5
 #define ACK_SIZE 13
@@ -41,6 +43,7 @@ struct server_opts
     int argc;
     int ip_family;
     int sock_fd;
+    pid_t graph_pid;
     FILE *graph_fd;
     FILE *stat_fd;
     in_port_t host_port;

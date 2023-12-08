@@ -24,6 +24,7 @@ struct networking_options {
     in_port_t receiver_port;
     bool terminal_input;
     time_t time_started;
+    size_t current_window_size;
     FILE * stats_file;
 };
 

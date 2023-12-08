@@ -78,7 +78,7 @@ void read_response(struct networking_options& networkingOptions, volatile int& e
             break;
         }
 
-        if (sent_file && ack_number == last_ack) {
+        if (sent_file && (ack_number == last_ack) && (networkingOptions.current_window_size == 0)) {
             std::cout << "File Sent Successfully." << std::endl;
             exit_flag = true;
         }

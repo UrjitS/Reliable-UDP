@@ -134,6 +134,7 @@ int set_up(void *arg) {
     {
         reset_stash(&opts->window[i]);
     }
+    opts->window[0].seq_num = UINT32_MAX;
     opts->graph_fd = fopen("./graph.txt", "w");
     opts->stat_fd = fopen("./stat.txt", "w");
     printf("Finished Set up\n");

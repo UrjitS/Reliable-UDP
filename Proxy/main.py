@@ -72,7 +72,7 @@ def main ():
     if args.g:
         pid = os.fork()
         if pid == 0:  # This is the child process.
-            os.execv('./main', ['./main', '-p', './statistics.txt'])
+            os.execv('/usr/bin/python3', ['/usr/bin/python3', './graph.py', '-p', './statistics.txt'])
         else:  # This is the parent process.
             UI().window.mainloop()
             os.waitpid(pid, 0)  # Wait for the child process to finish.

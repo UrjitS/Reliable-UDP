@@ -4,6 +4,7 @@ Generic UI to set the proxy settings live.
 import tkinter as tk
 import tkinter.messagebox
 import options
+import signal
 
 class UI:
     """
@@ -41,7 +42,13 @@ class UI:
 
         self.set_defaults()
         self.update_status()
+        
+        signal.signal(signal.SIGINT, self.handle_sigint)
 
+
+    def handle_sigint(self, signum, frame):
+        self.on_close()
+    
     def update_status(self):
         """
         Updates the status every 500ms.
